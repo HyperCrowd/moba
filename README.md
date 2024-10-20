@@ -6,4 +6,4 @@ Using [Phaser.js](https://phaser.io/) to bang this out in under 24 hours.
 * Left click shoots a fireball
 * We use simple and efficient masking to create map boundaries
 
-# [PLAY NOW!]()
+# [PLAY NOW!](https://hypercrowd.github.io/moba/index.html)
