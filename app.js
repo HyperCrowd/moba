@@ -11,4 +11,12 @@ const interfaceUri = process.env.NWJS_START_URL
 const startUri = `${interfaceUri}/index.html`
 
 // eslint-disable-next-line no-undef
-nw.Window.open(startUri, { icon: './dist/vite.svg' })
+nw.Window.open(startUri, { icon: './nw.icon.svg' })
+
+// eslint-disable-next-line no-undef
+const win = nw.Window.get()
+
+// TODO this doesn't load
+win.on('loaded', () => {
+    win.showDevTools();
+})

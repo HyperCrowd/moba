@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "standalone": "./node_modules/.bin/nw .",
-    "release": "npm build && npm run standalone",
+    "standalone": "npx nw .",
+    "release": "npm run build && npm run standalone",
     "preview": "vite preview",
     "test": "vitest tests"
   },
