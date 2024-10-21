@@ -1,7 +1,7 @@
 import type {
   Entities,
   Projectiles
-} from './types.d'
+} from '../types'
 
 type Result = Pick<Entities, 'projectiles'>
 
@@ -9,7 +9,7 @@ import 'phaser'
 import {
   FIREBALL_SPEED,
   FIREBALL_RANGE
-} from './constants'
+} from '../constants'
 
 const projectiles: Projectiles[] = []
 

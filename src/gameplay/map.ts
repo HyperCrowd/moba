@@ -1,7 +1,7 @@
 import type {
   Entities,
   MaskData
-} from './types.d'
+} from '../types'
 
 type Result = Pick<Entities, 'map' | 'maskData'>
 
@@ -11,7 +11,7 @@ import {
   PLAYER_HEIGHT,
   MAP_WIDTH,
   MAP_HEIGHT
-} from './constants'
+} from '../constants'
 
 /**
  * 

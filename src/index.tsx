@@ -1,5 +1,5 @@
 import 'phaser'
-import './index.css'
+import './ui/app.css'
 import UI from './ui'
 import { render } from 'solid-js/web'
 import { startEngine } from './engine'

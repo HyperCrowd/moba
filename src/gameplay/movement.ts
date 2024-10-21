@@ -1,6 +1,6 @@
 import type {
   Entities
-} from './types.d'
+} from '../types'
 
 type Result = Pick<Entities, 'player' | 'cursors'>
 
@@ -12,7 +12,7 @@ import {
   PLAYER_HEIGHT,
   MAP_WIDTH,
   MAP_HEIGHT
-} from './constants'
+} from '../constants'
 
 let collidingLeft = false
 let collidingRight = false

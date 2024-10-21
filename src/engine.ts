@@ -3,9 +3,9 @@ import type {
 } from './types.d'
 
 import 'phaser'
-import { createMovement, updateMovement } from './movement'
-import { createProjectiles, updateProjectiles } from './projectiles'
-import { createMap, updateMap } from './map'
+import { createMovement, updateMovement } from './gameplay/movement'
+import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
+import { createMap, updateMap } from './gameplay/map'
 
 let entities: Entities
 
