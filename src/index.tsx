@@ -1,6 +1,6 @@
 import 'phaser'
 import './index.css'
-import App from './App'
+import UI from './ui'
 import { render } from 'solid-js/web'
 import { startEngine } from './engine'
 
@@ -10,7 +10,7 @@ import { startEngine } from './engine'
 function main (): Phaser.Game {
   // UI
   const root = document.getElementById('root')
-  render(() => <App />, root!)
+  render(() => <UI />, root!)
   
   // Game
   const game = startEngine()

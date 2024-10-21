@@ -9,7 +9,7 @@ sleep 1
 
 # Open index.html in the default web browser
 if command -v xdg-open > /dev/null; then
-    xdg-open http://localhost:8000/index.html
+    xdg-open http://localhost:8000/index.html 2>/dev/null
 elif command -v open > /dev/null; then
     open http://localhost:8000/index.html
 else
