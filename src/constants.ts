@@ -1,0 +1,9 @@
+export const PLAYER_X = 500
+export const PLAYER_Y = 3800
+export const PLAYER_WIDTH = 64
+export const PLAYER_HEIGHT = 64
+export const MAP_WIDTH = 4480
+export const MAP_HEIGHT = 4480
+export const PLAYER_SPEED = 200
+export const FIREBALL_RANGE = 400
+export const FIREBALL_SPEED = 600
