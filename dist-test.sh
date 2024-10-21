@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start a simple HTTP server in the current directory and capture its PID
-python3 -m http.server 8000 &
+python3 -m http.server 8000 --directory dist &
 SERVER_PID=$!
 
 # Wait a moment for the server to start
