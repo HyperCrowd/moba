@@ -6,6 +6,7 @@
   "main": "app.js",
   "author": "",
   "license": "None",
+  "$schema": "tsconfig.schema.json",
   "node-remote": "http://localhost:5173",
   "scripts": {
     "dev": "vite",
