@@ -22,7 +22,7 @@ export function createMap (scene: Phaser.Scene): Result {
   map.setDisplaySize(MAP_WIDTH, MAP_HEIGHT)
 
   // Load the mask texture
-  const canvas = document.createElement('canvas')
+  const canvas = document.getElementById('game') as HTMLCanvasElement // document.createElement('canvas')
   const context = canvas.getContext('2d', {
     willReadFrequently: true
   }) as CanvasRenderingContext2D
