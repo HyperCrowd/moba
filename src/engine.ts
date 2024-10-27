@@ -1,13 +1,14 @@
 import type {
-  Entities,
+  System,
 } from './types.d'
 
 import 'phaser'
+import EventQueue from './events'
 import { createMovement, updateMovement } from './gameplay/movement'
 import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
 
-let entities: Entities
+let system: System
 
 const CONFIG: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -28,16 +29,18 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      * 
      */
     create: function (this: Phaser.Scene): void {
-      const { map, maskData } = createMap(this)
-      const { player, cursors } = createMovement(this)
-      const { projectiles } = createProjectiles(this, player)
+      const eventQueue = new EventQueue({ verbose: true })
+      const { map, maskData } = createMap(this, eventQueue)
+      const { player, cursors } = createMovement(this, eventQueue)
+      const { projectiles } = createProjectiles(this, eventQueue, player)
     
-      entities = {
+      system = {
         cursors,
         player,
         map,
         maskData,
-        projectiles
+        projectiles,
+        eventQueue
       }
     },
 
@@ -45,9 +48,9 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      * 
      */
     update: function (this: Phaser.Scene): void {
-      updateMovement(this, entities)
+      updateMovement(this, system)
       updateMap(this)
-      updateProjectiles(this, entities)
+      updateProjectiles(this, system)
     }
   },
   physics: {

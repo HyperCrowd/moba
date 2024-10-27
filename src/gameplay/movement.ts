@@ -1,9 +1,13 @@
 import type {
-  Entities
+  System
 } from '../types'
 
-type Result = Pick<Entities, 'player' | 'cursors'>
+type Result = Pick<System, 'player' | 'cursors'>
 
+import EventQueue from '../events'
+import {
+  EventType
+} from '../events/events'
 import {
   PLAYER_X,
   PLAYER_Y,
@@ -22,7 +26,7 @@ let collidingBottom = false
 /**
  * 
  */
-export function createMovement (scene: Phaser.Scene): Result {
+export function createMovement (scene: Phaser.Scene, eventQueue: EventQueue): Result {
   const keyboard = scene.input.keyboard as Phaser.Input.Keyboard.KeyboardPlugin
 
   const player = scene.physics.add.sprite(PLAYER_X, PLAYER_Y, 'player')
@@ -36,10 +40,13 @@ export function createMovement (scene: Phaser.Scene): Result {
   scene.cameras.main.startFollow(player)
   scene.cameras.main.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT)
 
+  // TODO do I even need these?
   keyboard.addKey('W')
   keyboard.addKey('A')
   keyboard.addKey('S')
   keyboard.addKey('D')
+
+  eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'movement' })
 
   return {
     player,
@@ -97,7 +104,7 @@ function checkPixelCollision(
 /**
  * 
  */
-export function updateMovement (scene: Phaser.Scene, entities: Entities): void {
+export function updateMovement (scene: Phaser.Scene, system: System): void {
   // Movement
   const keyboard = scene.input.keyboard as Phaser.Input.Keyboard.KeyboardPlugin
 
@@ -106,25 +113,25 @@ export function updateMovement (scene: Phaser.Scene, entities: Entities): void {
   let desiredVelocityY = 0
 
   // Calculate desired velocity based on input and collision state
-  if ((entities.cursors.left.isDown || keyboard.checkDown(keyboard.addKey('A'), 0)) && !collidingLeft) {
+  if ((system.cursors.left.isDown || keyboard.checkDown(keyboard.addKey('A'), 0)) && !collidingLeft) {
     desiredVelocityX = -PLAYER_SPEED
   }
 
-  if ((entities.cursors.right.isDown || keyboard.checkDown(keyboard.addKey('D'), 0)) && !collidingRight) {
+  if ((system.cursors.right.isDown || keyboard.checkDown(keyboard.addKey('D'), 0)) && !collidingRight) {
     desiredVelocityX = PLAYER_SPEED
   }
 
-  if ((entities.cursors.up.isDown || keyboard.checkDown(keyboard.addKey('W'), 0)) && !collidingTop) {
+  if ((system.cursors.up.isDown || keyboard.checkDown(keyboard.addKey('W'), 0)) && !collidingTop) {
     desiredVelocityY = -PLAYER_SPEED
   }
 
-  if ((entities.cursors.down.isDown || keyboard.checkDown(keyboard.addKey('S'), 0)) && !collidingBottom) {
+  if ((system.cursors.down.isDown || keyboard.checkDown(keyboard.addKey('S'), 0)) && !collidingBottom) {
     desiredVelocityY = PLAYER_SPEED
   }
 
   // Check for potential collisions with the desired velocity
-  const newX = entities.player.x + desiredVelocityX / 30
-  const newY = entities.player.y + desiredVelocityY / 30
+  const newX = system.player.x + desiredVelocityX / 30
+  const newY = system.player.y + desiredVelocityY / 30
 
   // Check for collisions with the player's pixel area
   const collisions = checkPixelCollision(
@@ -132,8 +139,8 @@ export function updateMovement (scene: Phaser.Scene, entities: Entities): void {
     newY,
     PLAYER_WIDTH,
     PLAYER_HEIGHT,
-    entities.map,
-    entities.maskData
+    system.map,
+    system.maskData
   )
 
   // Set the player's velocity based on the collision results
@@ -151,8 +158,8 @@ export function updateMovement (scene: Phaser.Scene, entities: Entities): void {
   }
 
   // Apply the calculated velocities
-  entities.player.setVelocityX(desiredVelocityX)
-  entities.player.setVelocityY(desiredVelocityY)
+  system.player.setVelocityX(desiredVelocityX)
+  system.player.setVelocityY(desiredVelocityY)
 
   // Update the collision flags based on the latest checks
   collidingLeft = collisions.collidingLeft

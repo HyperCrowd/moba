@@ -1,11 +1,15 @@
 import type {
-  Entities,
+  System,
   MaskData
 } from '../types'
 
-type Result = Pick<Entities, 'map' | 'maskData'>
+type Result = Pick<System, 'map' | 'maskData'>
 
 import 'phaser'
+import EventQueue from '../events'
+import {
+  EventType
+} from '../events/events'
 import {
   PLAYER_WIDTH,
   PLAYER_HEIGHT,
@@ -16,13 +20,13 @@ import {
 /**
  * 
  */
-export function createMap (scene: Phaser.Scene): Result {
+export function createMap (scene: Phaser.Scene, eventQueue: EventQueue): Result {
   const map = scene.add.image(0, 0, 'map').setOrigin(0, 0) 
 
   map.setDisplaySize(MAP_WIDTH, MAP_HEIGHT)
 
   // Load the mask texture
-  const canvas = document.getElementById('game') as HTMLCanvasElement // document.createElement('canvas')
+  const canvas = document.getElementById('game') as HTMLCanvasElement
   const context = canvas.getContext('2d', {
     willReadFrequently: true
   }) as CanvasRenderingContext2D
@@ -40,6 +44,8 @@ export function createMap (scene: Phaser.Scene): Result {
     canvas.width,
     canvas.height
   );
+
+  eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'map' })
 
   return {
     map,

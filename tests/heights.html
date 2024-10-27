@@ -12,12 +12,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
 </head>
 <body>
-    <canvas id="heightmapCanvas" width="640" height="640"></canvas>
+    <canvas id="heightmapCanvas" width="1024" height="1024"></canvas>
     <script>
         const canvas = document.getElementById('heightmapCanvas');
         const ctx = canvas.getContext('2d');
-        const width = 64;
-        const height = 64;
+        const width = 1024;
+        const height = 1024;
         const heightmap = [];
         const simplex = new SimplexNoise();
 
@@ -52,7 +52,7 @@
 
         // Draw the heightmap on the canvas
         function drawHeightmap(heightmap) {
-            const pixelSize = 10;
+            const pixelSize = 1;
 
             for (let y = 0; y < heightmap.length; y++) {
                 for (let x = 0; x < heightmap[y].length; x++) {
@@ -69,7 +69,7 @@
                 const centerY = canvas.height / 2;
 
                 // Draw the arrow from the center to the lowest point
-                drawArrow(centerX, centerY, lowestPoint.x * pixelSize + pixelSize / 2, lowestPoint.y * pixelSize + pixelSize / 2);
+                //drawArrow(centerX, centerY, lowestPoint.x * pixelSize + pixelSize / 2, lowestPoint.y * pixelSize + pixelSize / 2);
             }
         }
 

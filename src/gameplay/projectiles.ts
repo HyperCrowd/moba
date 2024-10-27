@@ -1,11 +1,16 @@
 import type {
-  Entities,
+  System,
   Projectiles
 } from '../types'
 
-type Result = Pick<Entities, 'projectiles'>
+type Result = Pick<System, 'projectiles'>
+type PointerEvent = { worldX: number, worldY: number}
 
 import 'phaser'
+import EventQueue from '../events'
+import {
+  EventType
+} from '../events/events'
 import {
   FIREBALL_SPEED,
   FIREBALL_RANGE
@@ -16,12 +21,14 @@ const projectiles: Projectiles[] = []
 /**
  * 
  */
-export function createProjectiles (scene: Phaser.Scene, player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody): Result {
+export function createProjectiles (scene: Phaser.Scene, eventQueue: EventQueue, player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody): Result {
   const result: Result = {
     projectiles
   }
 
-  scene.input.on('pointerdown', (pointer: { worldX: number, worldY: number}) => {
+  eventQueue.on(EventType.PROJECTILE_CREATED, (event) => {
+    const pointer = event.data as PointerEvent
+
     projectiles.push({
       sprite: scene.physics.add.sprite(player.x, player.y, 'fireball'),
       startX: player.x,
@@ -29,7 +36,13 @@ export function createProjectiles (scene: Phaser.Scene, player: Phaser.Types.Phy
       targetX: pointer.worldX,
       targetY: pointer.worldY
     })
-  });
+  })
+
+  scene.input.on('pointerdown', (pointer: PointerEvent) => {
+    eventQueue.emit<PointerEvent>(EventType.PROJECTILE_CREATED, pointer)
+  })
+
+  eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'projectiles' })
 
   return result
 }
@@ -37,8 +50,8 @@ export function createProjectiles (scene: Phaser.Scene, player: Phaser.Types.Phy
 /**
  * 
  */
-export function updateProjectiles (_scene: Phaser.Scene, entities: Entities): void {
-  entities.projectiles?.forEach(({ sprite, startX, startY, targetX, targetY }, index) => {
+export function updateProjectiles (_scene: Phaser.Scene, system: System): void {
+  system.projectiles?.forEach(({ sprite, startX, startY, targetX, targetY }, index) => {
     // Calculate direction and distance
     const dx = targetX - startX
     const dy = targetY - startY
@@ -63,7 +76,7 @@ export function updateProjectiles (_scene: Phaser.Scene, entities: Entities): vo
     // Destroy the fireball if it exceeds 100 pixels from the origin
     if (between > FIREBALL_RANGE) {
       sprite.destroy()
-      entities.projectiles?.splice(index, 1)
+      system.projectiles?.splice(index, 1)
     }
   })
 }
