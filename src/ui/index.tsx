@@ -14,7 +14,6 @@ type Props = {
 export function UI({ system }: Props) {
   return (
     <>
-      <canvas id="game"></canvas>
       <div class="overlay">
         <div class="tray" id="tray-left">
 

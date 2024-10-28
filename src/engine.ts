@@ -56,6 +56,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      */
     update: function (this: Phaser.Scene, _, delta: number): void {
       lastDelta = delta
+      system.eventQueue.update(delta)
       updateMovement(this, system)
       updateMap(this)
       updateProjectiles(this, system)
@@ -88,4 +89,11 @@ export async function startEngine (config = CONFIG): Promise<System> {
       resolve(system)
     })
   })
+}
+
+/**
+ *
+ */
+export function getSystem() {
+  return system
 }

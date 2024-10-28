@@ -5,22 +5,21 @@ import 'phaser'
 import { UI } from './ui'
 import { render } from 'solid-js/web'
 import { startEngine } from './engine'
-import { connect } from './network'
+//import { connect } from './network'
 
 /**
  * 
  */
 async function main (): Promise<System> {
-  // UI
-  const root = document.getElementById('root')
-  render(() => <canvas id="game"></canvas>, root!)
-
   // Game
   const system = await startEngine()
-  render(() => <UI system={system}/>, root!)
+
+  // UI
+  const ui = document.getElementById('ui')
+  render(() => <UI system={system}/>, ui!)
 
   // Network
-  await connect()
+  //await connect()
 
   return system
 }

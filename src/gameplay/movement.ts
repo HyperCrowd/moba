@@ -17,6 +17,9 @@ import {
   MAP_WIDTH,
   MAP_HEIGHT
 } from '../constants'
+import {
+  initializeCamera, followEntity
+} from './camera'
 
 let collidingLeft = false
 let collidingRight = false
@@ -37,9 +40,9 @@ export function createMovement (scene: Phaser.Scene, eventQueue: EventQueue): Re
   scene.physics.world.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT)
 
   // Camera follows the player
-  scene.cameras.main.startFollow(player)
-  scene.cameras.main.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT)
-  
+  initializeCamera(scene)
+  followEntity(player)
+
   eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'movement' })
 
   return {

@@ -31,6 +31,7 @@ import { EventType } from './events'
 
 // Event listener type
 type EventQueueListener = (payload: EventPayload) => void
+
 type Listeners = { 
   [key in EventType]?: EventQueueListener[]
 }
@@ -51,6 +52,13 @@ type EventPayload = {
 
 type Config = { verbose: boolean }
 
+export type Action = {
+  update: (delta: number) => void
+  isComplete: () => boolean
+  onComplete?: () => void
+}
+
+
 /**
  * This handles and routes all events from all seasons
  */
@@ -59,6 +67,7 @@ export default class EventQueue {
   private listeners: Listeners = {}
   private scheduledEvents: ScheduledEvent[] = []
   private counter: { [key in EventType]?: number } = {}
+  private actions: Action[] = []
   private config: Config = {
     verbose: false
   }
@@ -190,7 +199,37 @@ export default class EventQueue {
   public tick(): void {
     this.counter = {}
   }
+
+  /**
+   * Add Action
+   */
+  addAction(update: Action['update'], isComplete: Action['isComplete'], onComplete?: Action['onComplete']) {
+    this.actions.push({
+      update,
+      isComplete,
+      onComplete
+    })
+  }
+
+  /**
+   *
+   * @param delta
+   */
+  update (delta: number)  {
+    this.actions.forEach((action, index) => {
+      action.update(delta)
+
+      if (action.isComplete()) {
+        this.actions.splice(index, 1)
+
+        if (action.onComplete) {
+          action.onComplete()
+        }
+      }
+  });
+  }
 }
+
 
 /*
 // Example usage
