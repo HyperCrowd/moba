@@ -28,4 +28,10 @@ export type System = {
   maskData: Uint8ClampedArray
   projectiles: Projectiles[]
   eventQueue: EventQueue
+  game: Phaser.Game
+}
+
+export type KeyInputEvent = InputEvent & {
+  currentTarget: HTMLInputElement
+  target: HTMLInputElement
 }

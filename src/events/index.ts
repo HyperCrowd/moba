@@ -173,6 +173,18 @@ export default class EventQueue {
   }
 
   /**
+   * 
+   */
+  public once(eventType: EventType, listener: EventQueueListener): void {
+    const onceListener: EventQueueListener = (payload) => {
+      listener(payload); // Call the original listener
+      this.off(eventType, onceListener); // Remove the listener after it has been called
+    };
+  
+    this.on(eventType, onceListener); // Register the wrapped listener
+  }
+
+  /**
    * Tick-based execution method (for integration with game loop)
    */
   public tick(): void {

@@ -39,13 +39,7 @@ export function createMovement (scene: Phaser.Scene, eventQueue: EventQueue): Re
   // Camera follows the player
   scene.cameras.main.startFollow(player)
   scene.cameras.main.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT)
-
-  // TODO do I even need these?
-  keyboard.addKey('W')
-  keyboard.addKey('A')
-  keyboard.addKey('S')
-  keyboard.addKey('D')
-
+  
   eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'movement' })
 
   return {

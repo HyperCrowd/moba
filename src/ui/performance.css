@@ -1,0 +1,11 @@
+.metrics {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+.metric {
+  padding: 10px 20px;
+  margin: 0 5px;
+  color: white;
+  border-radius: 5px;
+}

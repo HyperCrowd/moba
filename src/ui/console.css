@@ -1,0 +1,36 @@
+.console {
+  position: fixed;
+  bottom: -50%;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  color: #158e15; /* Terminal green */
+  font-family: 'Courier New', Courier, monospace;
+  transition: bottom 0.3s ease-in-out;
+  overflow-y: auto;
+  z-index: 1000; /* Ensure it's on top */
+}
+
+.console.open {
+  bottom: 0;
+}
+
+.command-history {
+  padding: 10px;
+  overflow-y: auto;
+  height: calc(100% - 119px); /* Adjust based on input area height */
+}
+
+.input-area {
+  padding: 10px;
+  border-top: 1px solid #158e15; /* Border for input area */
+}
+
+input {
+  background: transparent;
+  border: none;
+  color: #00ff00; /* Terminal green */
+  outline: none;
+  font-family: inherit; /* Use inherited font */
+}
