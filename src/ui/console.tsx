@@ -1,4 +1,4 @@
-import './console.css'
+import './css/console.css'
 import type { System } from '../types.d'
 import { createSignal, onCleanup } from 'solid-js'
 import { Performance } from './performance'

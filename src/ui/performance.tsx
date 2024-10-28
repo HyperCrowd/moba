@@ -1,4 +1,4 @@
-import './performance.css'
+import './css/performance.css'
 
 import type { System } from '../types.d'
 import { createSignal, onCleanup, createEffect } from 'solid-js'

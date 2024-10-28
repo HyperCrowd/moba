@@ -1,4 +1,4 @@
-import './ui/app.css'
+import './ui/css/app.css'
 import type { System } from './types.d'
 
 import 'phaser'

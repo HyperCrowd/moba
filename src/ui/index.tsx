@@ -1,5 +1,5 @@
-import './ui.css'
-import './skills.css'
+import './css/ui.css'
+import './css/skills.css'
 import type { System } from '../types.d'
 
 import { Console } from './console'
