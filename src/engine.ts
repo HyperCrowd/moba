@@ -9,6 +9,7 @@ import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
 
 let system: System
+let lastDelta = 0
 
 const CONFIG: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -29,7 +30,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      * 
      */
     create: function (this: Phaser.Scene): void {
-      const eventQueue = new EventQueue({ verbose: true })
+      const eventQueue = new EventQueue({ verbose: false })
       const { map, maskData } = createMap(this, eventQueue)
       const { player, cursors } = createMovement(this, eventQueue)
       const { projectiles } = createProjectiles(this, eventQueue, player)
@@ -41,7 +42,10 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         maskData,
         projectiles,
         eventQueue,
-        game: this.game
+        game: this.game,
+        performance: {
+          getLastDelta: () => lastDelta
+        }
       }
 
       this.game.events.emit('systemReady', system)
@@ -50,7 +54,8 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
     /**
      * 
      */
-    update: function (this: Phaser.Scene): void {
+    update: function (this: Phaser.Scene, _, delta: number): void {
+      lastDelta = delta
       updateMovement(this, system)
       updateMap(this)
       updateProjectiles(this, system)

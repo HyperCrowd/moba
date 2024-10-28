@@ -8,6 +8,9 @@ type Props = {
   system: System
 }
 
+/**
+ * 
+ */
 export function UI({ system }: Props) {
   return (
     <>

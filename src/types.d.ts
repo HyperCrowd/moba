@@ -28,7 +28,10 @@ export type System = {
   maskData: Uint8ClampedArray
   projectiles: Projectiles[]
   eventQueue: EventQueue
-  game: Phaser.Game
+  game: Phaser.Game,
+  performance: {
+    getLastDelta: () => number
+  }
 }
 
 export type KeyInputEvent = InputEvent & {
