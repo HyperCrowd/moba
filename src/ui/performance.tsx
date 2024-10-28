@@ -1,6 +1,8 @@
+import './performance.css'
+
 import type { System } from '../types.d'
-import { createSignal, onCleanup, createEffect } from 'solid-js';
-import './performance.css'; // Import CSS for styling
+import { createSignal, onCleanup, createEffect } from 'solid-js'
+
 
 type Props = {
   system: System
@@ -16,13 +18,13 @@ export const Performance = ({ system }: Props ) => {
   // Update performance metrics every second
   createEffect(() => {
     const updateMetrics = () => {
-      setFps(system.game.loop.actualFps)
+      setFps(Math.floor(system.game.loop.actualFps))
       setMemory(0)
       setCpu(0)
       setLatency(0)
     };
 
-    const interval = setInterval(updateMetrics, 1000);
+    const interval = setInterval(updateMetrics, 100);
     onCleanup(() => clearInterval(interval));
   });
 

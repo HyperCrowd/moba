@@ -1,7 +1,14 @@
 import './ui.css'
 import './skills.css'
+import type { System } from '../types.d'
 
-function UI() {
+import { Console } from './console'
+
+type Props = {
+  system: System
+}
+
+export function UI({ system }: Props) {
   return (
     <>
       <canvas id="game"></canvas>
@@ -55,8 +62,7 @@ function UI() {
           </div>
         </div>
     </div>
+    <Console system={system} />
   </>
   )
 }
-
-export default UI

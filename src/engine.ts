@@ -40,8 +40,11 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         map,
         maskData,
         projectiles,
-        eventQueue
+        eventQueue,
+        game: this.game
       }
+
+      this.game.events.emit('systemReady', system)
     },
 
     /**
@@ -68,12 +71,16 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
 /**
  * 
  */
-export function startEngine (config = CONFIG): Phaser.Game { 
-  const game = new Phaser.Game(config)
+export async function startEngine (config = CONFIG): Promise<System> { 
+  return new Promise(resolve => {
+    const game = new Phaser.Game(config)
 
-  window.addEventListener('resize', () => {
-    game.scale.resize(window.innerWidth, window.innerHeight)
+    window.addEventListener('resize', () => {
+      game.scale.resize(window.innerWidth, window.innerHeight)
+    })
+
+    game.events.once('systemReady', () => {
+      resolve(system)
+    })
   })
-
-  return game
 }
