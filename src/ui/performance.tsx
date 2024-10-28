@@ -14,7 +14,7 @@ function getMemoryUsage () {
   const perf = performance as Performance & { memory: { usedJSHeapSize: number }}
 
   return perf.memory
-    ? Math.floor(perf.memory.usedJSHeapSize / 1024 / 1024 / 2)
+    ? Math.floor(perf.memory.usedJSHeapSize / 1024 / 1024)
     : 0
 }
 
@@ -51,7 +51,7 @@ export const Performance = ({ system }: Props ) => {
       <div class="metric" style={{
         'background-color': '#64b5f6'
       }}>
-        Memory: {memory()} MB
+        Heap: {memory()} MB
       </div>
       <div class="metric" style={{
         'background-color': '#81c784'
