@@ -1,11 +1,20 @@
 import { getBasename } from '../utils/strings'
 import { getSystem } from '../engine'
+import { getIntFromReal, getIntFromRealRange } from '../utils/math'
+import { getColorMode } from '../utils/colors'
 
 type ParticleCache = {
   [key: string]: Phaser.GameObjects.Particles.ParticleEmitter
 }
 
-const infiniteDuration = () => false
+type OrbitConfig = {
+  colorMode?: string
+  color?: number[]
+  flaring?: number // 0 - 1
+  speed?: number // 0 -1
+  tail?: number // 0 - 1
+  follows?: Phaser.GameObjects.Sprite
+}
 
 const particles: ParticleCache = {}
 
@@ -26,54 +35,96 @@ export function loadParticles (scene: Phaser.Scene, texturePaths: string[]): Par
   return result
 }
 
+export function createFire (scene: Phaser.Scene, x: number, y: number, radius: number, duration: number, texture: string = 'fireball', config: OrbitConfig = {}) {
+  const flaring = getIntFromReal(config.flaring ?? 0.5, 200)
+  const tail = getIntFromReal(config.tail ?? 0.25, 2400)
+
+  const fire = scene.add.particles(x, y, texture, {
+    color: config.color ??  [ 0xfacc22, 0xf89800, 0xf83600, 0x9f0404 ],
+    colorEase: 'quad.out',
+    lifespan: tail,
+    angle: { min: -100, max: -80 },
+    scale: { start: radius ?? 1, end: 0, ease: 'sine.out' },
+    speed: flaring,
+    quantity: 1,
+    advance: 2000,
+    blendMode: getColorMode(config.colorMode ?? 'blend'),
+    duration
+  })
+
+  if (config.follows) {
+    const system = getSystem()
+
+    const widthOffset = (config.follows?.displayWidth ?? 0) / 2
+    const heightOffset = (config.follows?.displayHeight ?? 0) / 2
+
+    const cleanup = system.eventQueue.addAction(() => {
+      const followX = config.follows?.body?.position.x as number
+      const followY = config.follows?.body?.position.y as number
+
+      fire.setPosition(
+        followX + widthOffset,
+        followY + heightOffset
+      )
+    })
+
+    fire.on('complete', () => {
+      fire.destroy()
+      cleanup()
+    })
+  } else {
+    fire.on('complete', () => {
+      fire.destroy()
+    })
+  }
+}
+
 /**
  * 
  */
-export function createOrbit (scene: Phaser.Scene, x: number, y: number, radius: number, speed: number, duration: number, follows: Phaser.GameObjects.Sprite | undefined = undefined, texture: string = 'fireball',) {
-  const emitter = scene.add.particles(x, y, texture, {
-    lifespan: 300,
-    speed: { min: 100, max: 200 },
-    scale: { start: 0.4, end: 0 },
+export function createOrbit (scene: Phaser.Scene, x: number, y: number, radius: number, duration: number, texture: string = 'fireball', config: OrbitConfig = {}) {
+  const circle = new Phaser.Geom.Circle(x, y, radius);
+  const flaring = getIntFromReal(config.flaring ?? 0.5, 100)
+  const speed = 225 - getIntFromRealRange(config.speed ?? 0.25, 25, 200)
+  const tail = getIntFromReal(config.tail ?? 0.25, 800)
+
+  const emitter = scene.add.particles(0, 0, texture, {
+    color: config.color,
+    blendMode: getColorMode(config.colorMode ?? ''),
+    lifespan: tail,
     quantity: 1,
-    blendMode: 'ADD' 
+    speed: flaring,
+    scale: { start: 0.5, end: 0 },
+    duration
+  })
+
+  emitter.addEmitZone({
+    type: 'edge',
+    source: circle,
+    quantity: speed,
+    total: 1
   })
 
   const system = getSystem()
-  let angle = 0
-  let elapsed = 0
 
-  const timed = () => elapsed >= duration
+  const widthOffset = (config.follows?.displayWidth ?? 0) / 2
+  const heightOffset = (config.follows?.displayHeight ?? 0) / 2
 
-  const widthOffset = (follows?.displayWidth ?? 0) / 2
-  const heightOffset = (follows?.displayHeight ?? 0) / 2
+  const cleanup = system.eventQueue.addAction(() => {
+    const followX = config.follows?.body?.position.x as number
+    const followY = config.follows?.body?.position.y as number
 
-  system.eventQueue.addAction((delta: number) => {
-    elapsed += delta
-    angle += speed
-    
-    const cos = radius * Math.cos(angle)
-    const sin = radius * Math.sin(angle)
-    const followX = follows?.body?.position.x as number
-    const followY = follows?.body?.position.y as number
+    emitter.setPosition(
+      followX - circle.x + widthOffset,
+      followY - circle.y + heightOffset
+    )
+  })
 
-    const emitterX = follows
-      ? followX + cos + widthOffset
-      : x + cos
-
-    const emitterY = follows
-      ? followY + sin + heightOffset
-      : y + sin
-
-      emitter.emitParticleAt(emitterX, emitterY, 1)
-
-      emitter.setPosition(emitterX, emitterY)
-      //emitter.setEmitterAngle(angle)
-      emitter.setRotation(angle)
-  }, duration === 0
-    ? infiniteDuration
-    : timed,
-  () => emitter.destroy()
-  )
+  emitter.on('complete', () => {
+    // TODO destroy circle?
+    emitter.destroy()
+    cleanup()
+  })
 
   return emitter
 }

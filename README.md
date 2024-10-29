@@ -10,6 +10,12 @@ Using [Phaser.js](https://phaser.io/) to bang this out in under 24 hours.
 
 # [PLAY NOW!](https://hypercrowd.github.io/moba/dist/index.html)
 
+# Updates
+
+* We now have a basic theory of particle implementation!
+  * The player will have a fireball orbiting him
+  * When the fireball spell finishes, a cluster of explosions will happen and a fire will burn for 1 second
+
 ## Installation
 
 ```bash

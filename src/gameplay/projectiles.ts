@@ -15,7 +15,7 @@ import {
   FIREBALL_SPEED,
   FIREBALL_RANGE
 } from '../constants'
-import { createCircleBurst } from '../visuals/particles'
+import { createCircleBurst, createFire } from '../visuals/particles'
 
 const projectiles: Projectiles[] = []
 
@@ -77,6 +77,7 @@ export function updateProjectiles (scene: Phaser.Scene, system: System): void {
     // Destroy the fireball if it exceeds 100 pixels from the origin
     if (between > FIREBALL_RANGE) {
       createCircleBurst(scene, sprite.x, sprite.y, 50, 250)
+      createFire(scene, sprite.x, sprite.y, 0.7, 1000)
       sprite.destroy()
       system.projectiles?.splice(index, 1)
       

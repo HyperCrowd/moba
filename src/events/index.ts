@@ -52,6 +52,8 @@ type EventPayload = {
 
 type Config = { verbose: boolean }
 
+const infiniteDuration = () => false
+
 export type Action = {
   update: (delta: number) => void
   isComplete: () => boolean
@@ -201,14 +203,19 @@ export default class EventQueue {
   }
 
   /**
-   * Add Action
+   * Add Action.  Returns a function that terminates the action
    */
-  addAction(update: Action['update'], isComplete: Action['isComplete'], onComplete?: Action['onComplete']) {
-    this.actions.push({
+  addAction(update: Action['update'], isComplete: Action['isComplete'] = infiniteDuration, onComplete?: Action['onComplete']): () => void {
+    const index = this.actions.push({
       update,
       isComplete,
       onComplete
     })
+
+    return () => {
+      this.actions.slice(index, 1)
+      return undefined
+    }
   }
 
   /**

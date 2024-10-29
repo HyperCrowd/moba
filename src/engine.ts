@@ -50,7 +50,15 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         }
       }
 
-      createOrbit(this, player.x, player.y, 100, 0.05, 0, player)
+      createOrbit(this, player.x, player.y, 50, 0, 'fireball', {
+        colorMode: 'light',
+        color: [ 0xfacc22, 0xf89800, 0xf83600, 0x9f0404, 0x4b4a4f, 0x353438, 0x040404 ],
+        tail: 1,
+        speed: 0.75,
+        flaring: 0.2,
+        follows: player
+      })
+
       this.game.events.emit('systemReady', system)
     },
 
