@@ -7,12 +7,14 @@ import EventQueue from './events'
 import { createMovement, updateMovement } from './gameplay/movement'
 import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
+import { createOrbit } from './visuals/particles'
 
 let system: System
 let lastDelta = 0
 
 const CONFIG: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.WEBGL,
+  // type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
   scene: {
@@ -34,7 +36,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
       const { map, maskData } = createMap(this, eventQueue)
       const { player, cursors } = createMovement(this, eventQueue)
       const { projectiles } = createProjectiles(this, eventQueue, player)
-    
+
       system = {
         cursors,
         player,
@@ -48,6 +50,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         }
       }
 
+      createOrbit(this, player.x, player.y, 100, 0.05, 0, player)
       this.game.events.emit('systemReady', system)
     },
 

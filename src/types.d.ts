@@ -38,3 +38,11 @@ export type KeyInputEvent = InputEvent & {
   currentTarget: HTMLInputElement
   target: HTMLInputElement
 }
+
+export type Shapes = Phaser.Geom.Circle
+  | Phaser.Geom.Ellipse
+  | Phaser.Geom.Line
+  | Phaser.Geom.Polygon
+  | Phaser.Geom.Rectangle
+  | Phaser.Geom.Triangle
+  | Phaser.Geom.Mesh
