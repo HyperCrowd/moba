@@ -8,6 +8,7 @@ import { createMovement, updateMovement } from './gameplay/movement'
 import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
 import { createOrbit } from './visuals/particles'
+// import { createSmoke } from './visuals/shaders'
 
 let system: System
 let lastDelta = 0
@@ -58,6 +59,10 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         flaring: 0.2,
         follows: player
       })
+
+      // createSmoke(this, player.x, player.y, 100, 100, 10000, {
+      //   follows: player
+      // })
 
       this.game.events.emit('systemReady', system)
     },
