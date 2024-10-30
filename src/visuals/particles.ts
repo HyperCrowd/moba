@@ -1,5 +1,7 @@
+import type { Actors, Shapes } from '../types'
+
 import { getBasename } from '../utils/strings'
-import { getSystem } from '../engine'
+import { getSystem, actorFollow } from '../engine'
 import { getIntFromReal, getIntFromRealRange } from '../utils/math'
 import { getColorMode } from '../utils/colors'
 
@@ -13,7 +15,7 @@ type OrbitConfig = {
   flaring?: number // 0 - 1
   speed?: number // 0 -1
   tail?: number // 0 - 1
-  follows?: Phaser.GameObjects.Sprite
+  follows?: Actors
 }
 
 const particles: ParticleCache = {}
@@ -52,31 +54,40 @@ export function createFire (scene: Phaser.Scene, x: number, y: number, radius: n
     duration
   })
 
+  fire.on('complete', () => {
+    fire.destroy()
+  })
+
   if (config.follows) {
-    const system = getSystem()
-
-    const widthOffset = (config.follows?.displayWidth ?? 0) / 2
-    const heightOffset = (config.follows?.displayHeight ?? 0) / 2
-
-    const cleanup = system.eventQueue.addAction(() => {
-      const followX = config.follows?.body?.position.x as number
-      const followY = config.follows?.body?.position.y as number
-
-      fire.setPosition(
-        followX + widthOffset,
-        followY + heightOffset
-      )
-    })
-
-    fire.on('complete', () => {
-      fire.destroy()
-      cleanup()
-    })
-  } else {
-    fire.on('complete', () => {
-      fire.destroy()
-    })
+    actorFollow(fire, config.follows) 
   }
+}
+
+/**
+ * 
+ */
+function emitZoneFollows (shape: Shapes, emitter: Phaser.GameObjects.Particles.ParticleEmitter, follows: Actors) {
+  const system = getSystem()
+
+  const widthOffset = follows && 'displayWidth' in follows
+    ? follows.displayWidth
+    : 0
+
+  const heightOffset = follows && 'displayHeight' in follows
+    ? follows.displayHeight
+    : 0
+
+  const unfollow = system.eventQueue.addAction(() => {
+    const followX = follows?.body?.position.x as number
+    const followY = follows?.body?.position.y as number
+
+    emitter.setPosition(
+      followX - shape.x + widthOffset / 2,
+      followY - shape.y + heightOffset / 2
+    )
+  })
+
+  return unfollow
 }
 
 /**
@@ -105,25 +116,18 @@ export function createOrbit (scene: Phaser.Scene, x: number, y: number, radius: 
     total: 1
   })
 
-  const system = getSystem()
+  const onComplete = [
+    () => emitter.destroy()
+  ]
 
-  const widthOffset = (config.follows?.displayWidth ?? 0) / 2
-  const heightOffset = (config.follows?.displayHeight ?? 0) / 2
-
-  const cleanup = system.eventQueue.addAction(() => {
-    const followX = config.follows?.body?.position.x as number
-    const followY = config.follows?.body?.position.y as number
-
-    emitter.setPosition(
-      followX - circle.x + widthOffset,
-      followY - circle.y + heightOffset
+  if (config.follows) {
+    onComplete.push(
+      emitZoneFollows(circle, emitter, config.follows)
     )
-  })
+  }
 
   emitter.on('complete', () => {
-    // TODO destroy circle?
-    emitter.destroy()
-    cleanup()
+    onComplete.forEach(cleanup => cleanup())
   })
 
   return emitter
@@ -132,7 +136,7 @@ export function createOrbit (scene: Phaser.Scene, x: number, y: number, radius: 
 /**
  * 
  */
-export function createCircleBurst (scene: Phaser.Scene, x: number, y: number, radius: number, duration: number = 500, texture: string = 'fireball',) {
+export function createCircleBurst (scene: Phaser.Scene, x: number, y: number, radius: number, duration: number = 500, texture: string = 'fireball', config: OrbitConfig = {}) {
   const circle = new Phaser.Geom.Circle(x, y, radius);
   const emitter = scene.add.particles(0, 0, texture, {
     blendMode: 'ADD',
@@ -148,8 +152,18 @@ export function createCircleBurst (scene: Phaser.Scene, x: number, y: number, ra
     quantity: 1
   })
 
+  const onComplete = [
+    () => emitter.destroy()
+  ]
+
+  if (config.follows) {
+    onComplete.push(
+      emitZoneFollows(circle, emitter, config.follows)
+    )
+  }
+
   emitter.on('complete', () => {
-    emitter.destroy()
+    onComplete.forEach(cleanup => cleanup())
   })
 
   return emitter

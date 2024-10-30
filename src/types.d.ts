@@ -46,3 +46,6 @@ export type Shapes = Phaser.Geom.Circle
   | Phaser.Geom.Rectangle
   | Phaser.Geom.Triangle
   | Phaser.Geom.Mesh
+
+export type Actors = Phaser.GameObjects.Sprite
+  | Phaser.GameObjects.Particles.ParticleEmitter

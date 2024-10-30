@@ -32,6 +32,8 @@
     "jsdom": "^24.1.0",
     "peerjs": "^1.5.4",
     "phaser": "3.85.0",
+    "pngjs": "^7.0.0",
+    "seedrandom": "^3.0.5",
     "vite-plugin-singlefile": "^2.0.1"
   }
 }

@@ -206,15 +206,23 @@ export default class EventQueue {
    * Add Action.  Returns a function that terminates the action
    */
   addAction(update: Action['update'], isComplete: Action['isComplete'] = infiniteDuration, onComplete?: Action['onComplete']): () => void {
-    const index = this.actions.push({
+    const config = {
       update,
       isComplete,
       onComplete
-    })
+    }
+
+    this.actions.push(config)
 
     return () => {
-      this.actions.slice(index, 1)
-      return undefined
+      const index = this.actions.findIndex(e => e === config)
+      if (index > -1) {
+        if (this.actions[index].onComplete) {
+          this.actions[index].onComplete()
+        }
+
+        this.actions.slice(index, 1)
+      }
     }
   }
 
@@ -226,12 +234,12 @@ export default class EventQueue {
     this.actions.forEach((action, index) => {
       action.update(delta)
 
-      if (action.isComplete()) {
-        this.actions.splice(index, 1)
-
+      if (action.isComplete && action.isComplete()) {
         if (action.onComplete) {
           action.onComplete()
         }
+
+        this.actions.splice(index, 1)
       }
   });
   }

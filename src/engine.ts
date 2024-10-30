@@ -1,5 +1,6 @@
 import type {
   System,
+  Actors
 } from './types.d'
 
 import 'phaser'
@@ -8,6 +9,7 @@ import { createMovement, updateMovement } from './gameplay/movement'
 import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
 import { createOrbit } from './visuals/particles'
+
 // import { createSmoke } from './visuals/shaders'
 
 let system: System
@@ -51,7 +53,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         }
       }
 
-      createOrbit(this, player.x, player.y, 50, 0, 'fireball', {
+      createOrbit(this, player.x, player.y, 50, 250, 'fireball', {
         colorMode: 'light',
         color: [ 0xfacc22, 0xf89800, 0xf83600, 0x9f0404, 0x4b4a4f, 0x353438, 0x040404 ],
         tail: 1,
@@ -112,4 +114,49 @@ export async function startEngine (config = CONFIG): Promise<System> {
  */
 export function getSystem() {
   return system
+}
+
+/**
+ * 
+ * @param source 
+ * @param target 
+ * @param duration 
+ */
+export function actorFollow(source: Actors, target: Actors, duration: number = 0, destroyOnComplete = true) {
+  let elapsed = 0
+
+  const widthOffset = 'displayWidth' in target
+    ? target.displayWidth
+    : 0
+
+  const heightOffset = 'displayHeight' in target
+    ? target.displayHeight
+    : 0
+
+  const unfollow = system.eventQueue.addAction((delta: number) => {
+    elapsed += delta
+
+    const followX = target.body
+      ? target.body.position.x
+      : target.x
+
+      const followY = target.body
+      ? target.body.position.y
+      : target.y
+
+    source.setPosition(
+      followX + widthOffset / 2,
+      followY + heightOffset / 2
+    )
+  },
+  duration === 0
+    ? undefined
+    : () => elapsed >= duration,
+  () => {
+    if (destroyOnComplete === true) {
+      source.destroy()
+    }
+  })
+
+  return unfollow
 }
