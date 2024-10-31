@@ -1,5 +1,6 @@
 import { Struct } from '../types'
 import { EventType } from './events'
+import { logInfo } from '../utils/log'
 
 /**
  * Implements an EventQueue class that facilitates event handling and dispatching, allowing listeners to subscribe
@@ -36,7 +37,7 @@ type Listeners = {
   [key in EventType]?: EventQueueListener[]
 }
 type ScheduledEvent = {
-  id: number;
+  id: number
   type: EventType
   timeoutId?: ReturnType<typeof setTimeout>
   intervalId?: ReturnType<typeof setInterval>
@@ -52,14 +53,11 @@ type EventPayload = {
 
 type Config = { verbose: boolean }
 
-const infiniteDuration = () => false
-
 export type Action = {
   update: (delta: number) => void
-  isComplete: () => boolean
+  isComplete?: () => boolean
   onComplete?: () => void
 }
-
 
 /**
  * This handles and routes all events from all seasons
@@ -113,7 +111,7 @@ export default class EventQueue {
     }
 
     if (this.config.verbose === true) {
-      console.info(`EventQueue.emit (${new Date().toISOString()})`, payload)
+      logInfo(`EventQueue.emit`, payload)
     }
 
     const eventListeners = this.listeners[eventType]
@@ -188,11 +186,15 @@ export default class EventQueue {
    */
   public once(eventType: EventType, listener: EventQueueListener): void {
     const onceListener: EventQueueListener = (payload) => {
-      listener(payload); // Call the original listener
-      this.off(eventType, onceListener); // Remove the listener after it has been called
-    };
-  
-    this.on(eventType, onceListener); // Register the wrapped listener
+      // Call the original listener
+      listener(payload)
+      
+      // Remove the listener after it has been called
+      this.off(eventType, onceListener) 
+    }
+
+    // Register the wrapped listener
+    this.on(eventType, onceListener)
   }
 
   /**
@@ -203,27 +205,41 @@ export default class EventQueue {
   }
 
   /**
+   * 
+   */
+  removeAction (action: Action) {
+    const index = this.actions.findIndex(e => e === action)
+    if (index > -1) {
+      if (this.actions[index].onComplete) {
+        this.actions[index].onComplete()
+      }
+
+      this.actions.slice(index, 1)
+    }
+  }
+
+  /**
    * Add Action.  Returns a function that terminates the action
    */
-  addAction(update: Action['update'], isComplete: Action['isComplete'] = infiniteDuration, onComplete?: Action['onComplete']): () => void {
-    const config = {
+  addAction(update: Action['update'], isComplete?: Action['isComplete'], onComplete?: Action['onComplete']): () => void {
+    const action = {
       update,
       isComplete,
       onComplete
     }
 
-    this.actions.push(config)
+    this.actions.push(action)
 
-    return () => {
-      const index = this.actions.findIndex(e => e === config)
-      if (index > -1) {
-        if (this.actions[index].onComplete) {
-          this.actions[index].onComplete()
-        }
-
-        this.actions.slice(index, 1)
-      }
-    }
+    return () => this.removeAction(action)
+    // {
+    //   const index = this.actions.findIndex(e => e === config)
+    //   if (index > -1) {
+    //     if (this.actions[index].onComplete) {
+    //       this.actions[index].onComplete()
+    //     }
+    //     this.actions.slice(index, 1)
+    //   }
+    // }
   }
 
   /**
@@ -241,7 +257,7 @@ export default class EventQueue {
 
         this.actions.splice(index, 1)
       }
-  });
+    })
   }
 }
 
@@ -265,7 +281,7 @@ eventQueue.emit(EventType.PLAYER_DIED, { playerId: 1 })
 const healEventId = eventQueue.schedule(EventType.PLAYER_DIED, { playerId: 1 }, 2000)
 
 // Cancel the scheduled event if needed
-eventQueue.cancel(healEventId);
+eventQueue.cancel(healEventId)
 
 // Emit a repeating event (e.g., health regeneration)
 const regenEventId = eventQueue.repeating(EventType.HEALTH_REGEN, { playerId: 1, amount: 5 }, 1000, 5000)
