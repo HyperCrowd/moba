@@ -25,3 +25,23 @@ export function getIntFromRealRange(value: number, min: number, max: number): nu
 
   return min + value * (max - min)
 }
+
+/**
+ * 
+ * @param elapsedTime 
+ * @param duration 
+ * @returns 
+ */
+export function getYoyoPercentage (elapsedTime: number, duration: number): number {
+  // Normalize elapsed time based on duration
+  const normalizedTime = elapsedTime % (2 * duration);
+
+  // Determine percentage based on yoyo logic
+  if (normalizedTime < duration) {
+    // Ascending phase
+    return normalizedTime / duration;
+  } else {
+    // Descending phase
+    return 1 - ((normalizedTime - duration) / duration);
+  }
+}

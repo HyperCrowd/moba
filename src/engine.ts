@@ -74,9 +74,9 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
       })
 
       createRectangle(this, player.x + 200, player.y, {
-        borderWidth: 6,
+        borderWidth: 0,
         borderColor: 0x00ff00,
-        colors: [0x008800 ],
+        colors: [0x0000ff, 0x008800],
         duration: 0,
         fillType: 'pulse',
         pulseDelay: 500,

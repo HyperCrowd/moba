@@ -1,11 +1,6 @@
-/*
-TODO
-
-- The filling appears to be shape-specific, so a system needs to be invented
-- Following doesn't appear to be working
-
-*/
 import type { Actors } from '../types'
+import { getSystem } from '../engine'
+import { getYoyoPercentage } from '../utils/math'
 // import { actorFollow } from '../engine'
 
 type ShapeConfig = {
@@ -27,15 +22,13 @@ type ShapeConfig = {
 /**
  * 
  */
-function prepareGraphics (scene: Phaser.Scene, config: ShapeConfig) {
+function prepareGraphics (scene: Phaser.Scene, config: ShapeConfig, fillInstructions: (graphics: Phaser.GameObjects.Graphics) => void) {
   const {
-    // width,
     colors,
     fillType = 'solid',
     borderWidth = 0,
     borderColor = 0x000000,
     pulseDelay = 1000,
-    // height = width,
     opacity = 1,
     // follows,
     // duration = 0,
@@ -47,25 +40,26 @@ function prepareGraphics (scene: Phaser.Scene, config: ShapeConfig) {
 
   if (fillType === 'pulse') {
     // Start pulsing effect
-    let pulseProgress = 0
+    const system = getSystem()
+    let elapsed = 0
 
-    scene.tweens.add({
-      targets: graphics,
-      alpha: { from: 0, to: 1 },
-      duration: pulseDelay,
-      repeat: -1,
-      yoyo: true,
-      onUpdate: () => {
-        const color = Phaser.Display.Color.Interpolate.ColorWithColor(
-            Phaser.Display.Color.IntegerToColor(colors[0]),
-            Phaser.Display.Color.IntegerToColor(colors[1]),
-            1,
-            pulseProgress / pulseDelay
-        );
-        graphics.fillStyle(Phaser.Display.Color.GetColor(color.r, color.g, color.b), color.a);
-        pulseProgress += 1;
-      }
-    });
+    system.eventQueue.addAction((delta: number) => {
+      elapsed += delta
+      const percentage = getYoyoPercentage(elapsed, pulseDelay)
+
+      // TODO add opacity gradient
+
+      const color = Phaser.Display.Color.Interpolate.ColorWithColor(
+        Phaser.Display.Color.IntegerToColor(colors[0]),
+        Phaser.Display.Color.IntegerToColor(colors[1]),
+        1,
+        percentage
+      )
+
+      graphics.fillStyle(Phaser.Display.Color.GetColor(color.r, color.g, color.b))
+      graphics.lineStyle(borderWidth, borderColor)
+      fillInstructions(graphics)
+    })
   } else {
     // Solid fill color
     graphics.fillStyle(colors[0], 1)
@@ -73,29 +67,28 @@ function prepareGraphics (scene: Phaser.Scene, config: ShapeConfig) {
 
   // Draw the shape based on shapeType
   if (borderWidth) {
-    graphics.lineStyle(borderWidth, Phaser.Display.Color.IntegerToColor(borderColor).color);
+    graphics.lineStyle(borderWidth, Phaser.Display.Color.IntegerToColor(borderColor).color)
   }
 
+  fillInstructions(graphics)
+  
   // TODO: Fix
   // if (follows) {
   //   actorFollow(graphics, follows, duration, deleteAfterComplete)
   // }
 
-  return {
-    graphics
-  } 
+  return graphics
 }
 
 /**
  * 
  */
 export function createCircle (scene: Phaser.Scene, x: number, y: number, config: ShapeConfig) {
-  const { graphics } = prepareGraphics(scene, config)
   const { width } = config
-
-  graphics.fillCircle(x, y, width)
-  graphics.strokeCircle(x, y, width)
-  return graphics
+  return prepareGraphics(scene, config, graphics => {
+    graphics.fillCircle(x, y, width)
+    graphics.strokeCircle(x, y, width) 
+  })
 }
 
 /**
@@ -103,12 +96,11 @@ export function createCircle (scene: Phaser.Scene, x: number, y: number, config:
  */
 
 export function createRectangle (scene: Phaser.Scene, x: number, y: number, config: ShapeConfig) {
-  const { graphics } = prepareGraphics(scene, config)
   const { width, height } = config
-
-  graphics.fillRect(x, y, width, height ?? width);
-  graphics.strokeRect(x, y, width, height ?? width);
-  return graphics
+  return prepareGraphics(scene, config, graphics => {
+    graphics.fillRect(x, y, width, height ?? width);
+    graphics.strokeRect(x, y, width, height ?? width);
+  })
 }
 
 /**
@@ -116,34 +108,33 @@ export function createRectangle (scene: Phaser.Scene, x: number, y: number, conf
  */
 
 export function createTriangle (scene: Phaser.Scene, x: number, y: number, config: ShapeConfig) {
-  const { graphics } = prepareGraphics(scene, config)
   const { width, height } = config
-
-  const points = [
-    new Phaser.Math.Vector2(x, y - (height ?? width) / 2),
-    new Phaser.Math.Vector2(x - width / 2, y + (height ?? width) / 2),
-    new Phaser.Math.Vector2(x + width / 2, y + (height ?? width) / 2)
-  ];
-  graphics.fillPoints(points, true);
-  graphics.strokePoints(points, true);
-  return graphics
+  return prepareGraphics(scene, config, graphics => {
+    const points = [
+      new Phaser.Math.Vector2(x, y - (height ?? width) / 2),
+      new Phaser.Math.Vector2(x - width / 2, y + (height ?? width) / 2),
+      new Phaser.Math.Vector2(x + width / 2, y + (height ?? width) / 2)
+    ];
+    graphics.fillPoints(points, true)
+    graphics.strokePoints(points, true)
+  })
 }
 
 /**
  * 
  */
 export function createPolygon (scene: Phaser.Scene, x: number, y: number, config: ShapeConfig) {
-    const { graphics } = prepareGraphics(scene, config)
-    const { width, height } = config
-
-    const sides = 5;
-    const step = (Math.PI * 2) / sides;
-    const polygonPoints = [];
+  const { width, height } = config  
+  return prepareGraphics(scene, config, graphics => {
+    const sides = 5
+    const step = (Math.PI * 2) / sides
+    const polygonPoints = []
     for (let i = 0; i < sides; i++) {
-        const angle = step * i;
-        polygonPoints.push(new Phaser.Math.Vector2(x + Math.cos(angle) * (width / 2), y + Math.sin(angle) * ((height ?? width) / 2)));
+        const angle = step * i
+        polygonPoints.push(new Phaser.Math.Vector2(x + Math.cos(angle) * (width / 2), y + Math.sin(angle) * ((height ?? width) / 2)))
     }
-    graphics.fillPoints(polygonPoints, true);
-    graphics.strokePoints(polygonPoints, true);
-    return graphics
+
+    graphics.fillPoints(polygonPoints, true)
+    graphics.strokePoints(polygonPoints, true)
+  })
 }
