@@ -9,6 +9,7 @@ import { createMovement, updateMovement } from './gameplay/movement'
 import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
 import { createOrbit } from './visuals/particles'
+import { createCircle, createRectangle } from './visuals/shapes'
 
 // import { createSmoke } from './visuals/shaders'
 
@@ -53,12 +54,34 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         }
       }
 
-      createOrbit(this, player.x, player.y, 50, 250, 'fireball', {
+      createOrbit(this, player.x, player.y, 50, 0, 'fireball', {
         colorMode: 'light',
         color: [ 0xfacc22, 0xf89800, 0xf83600, 0x9f0404, 0x4b4a4f, 0x353438, 0x040404 ],
         tail: 1,
         speed: 0.75,
         flaring: 0.2,
+        follows: player
+      })
+
+      createCircle(this, player.x, player.y, {
+        borderWidth: 6,
+        borderColor: 0x000000,
+        colors: [0xff0000],
+        duration: 0,
+        fillType: 'solid',
+        width: 50,
+        follows: player
+      })
+
+      createRectangle(this, player.x + 200, player.y, {
+        borderWidth: 6,
+        borderColor: 0x00ff00,
+        colors: [0x008800 ],
+        duration: 0,
+        fillType: 'pulse',
+        pulseDelay: 500,
+        width: 100,
+        height: 150,
         follows: player
       })
 
@@ -117,7 +140,7 @@ export function getSystem() {
 }
 
 /**
- * 
+ * TODO Add the ability to follow the mouse
  * @param source 
  * @param target 
  * @param duration 

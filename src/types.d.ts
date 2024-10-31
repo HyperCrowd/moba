@@ -49,3 +49,4 @@ export type Shapes = Phaser.Geom.Circle
 
 export type Actors = Phaser.GameObjects.Sprite
   | Phaser.GameObjects.Particles.ParticleEmitter
+  | Phaser.GameObjects.Graphics
