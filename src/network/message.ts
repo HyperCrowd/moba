@@ -1,5 +1,7 @@
+export type NetCodeDefinition = [string, number] | [string, string, number]
+
 type Commands = {
-  [key: string]: Array<[string, number] | [string, string, number]>
+  [key: string]: NetCodeDefinition[]
 }
 
 type MessageArguments = {

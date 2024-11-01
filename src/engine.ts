@@ -10,6 +10,7 @@ import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
 import { createMap, updateMap } from './gameplay/map'
 import { createOrbit } from './visuals/particles'
 import { createCircle, createRectangle } from './visuals/shapes'
+import { startActions } from './events/action'
 
 // import { createSmoke } from './visuals/shaders'
 
@@ -53,6 +54,10 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
           getLastDelta: () => lastDelta
         }
       }
+
+      startActions(this, system)
+
+      // TODO remove these tests below
 
       createOrbit(this, player.x, player.y, 50, 0, 'fireball', {
         colorMode: 'light',

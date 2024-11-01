@@ -31,6 +31,12 @@ import { logInfo } from '../utils/log'
  **/
 
 // Event listener type
+export type EventPayload = {
+  type: EventType
+  counter: Counter
+  data?: Struct
+}
+
 type EventQueueListener = (payload: EventPayload) => void
 
 type Listeners = { 
@@ -44,12 +50,6 @@ type ScheduledEvent = {
 }
 
 type Counter = { [key in EventType]?: number }
-
-type EventPayload = {
-  type: EventType
-  counter: Counter
-  data?: Struct
-}
 
 type Config = { verbose: boolean }
 
