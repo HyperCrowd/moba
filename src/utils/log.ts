@@ -59,6 +59,11 @@ export const logDebug = (message: Any, data?: Any): void => log('debug', message
 /**
  * 
  */
+export const logSilly = (message: Any, data?: Any): void => log('silly', message, data)
+
+/**
+ * 
+ */
 export const filterLog = (level: LogLevel, withoutTime: boolean = false): string[] => {
   return messages.filter(message => message[0] === LOG_LEVEL[level])
     .map(message => withoutTime === true

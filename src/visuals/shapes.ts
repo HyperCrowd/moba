@@ -43,7 +43,7 @@ function prepareGraphics (scene: Phaser.Scene, config: ShapeConfig, fillInstruct
     const system = getSystem()
     let elapsed = 0
 
-    system.eventQueue.addAction((delta: number) => {
+    system.eventQueue.addUpdate((delta: number) => {
       elapsed += delta
       const percentage = getYoyoPercentage(elapsed, pulseDelay)
 
@@ -70,12 +70,7 @@ function prepareGraphics (scene: Phaser.Scene, config: ShapeConfig, fillInstruct
     graphics.lineStyle(borderWidth, Phaser.Display.Color.IntegerToColor(borderColor).color)
   }
 
-  fillInstructions(graphics)
-  
-  // TODO: Fix
-  // if (follows) {
-  //   actorFollow(graphics, follows, duration, deleteAfterComplete)
-  // }
+  fillInstructions(graphics) 
 
   return graphics
 }

@@ -67,7 +67,7 @@ void main() {
   const heightOffset = (config.follows?.displayHeight ?? 0) / 2
   let elapsed = 0
 
-  system.eventQueue.addAction((delta: number) => {
+  system.eventQueue.addUpdate((delta: number) => {
       elapsed += delta
 
       if (config.follows) {

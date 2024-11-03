@@ -88,7 +88,7 @@ async function connectToCoordinator (id: string, coordinatorId: string): Promise
       // Begin connection to the Coordinator
       const connection = peer.connect(coordinatorId, {
         serialization: 'binary',
-        label: 'test' // TODO change this
+        label: 'test' // TODO Explore how PeerJS uses labels
       })
 
       /**

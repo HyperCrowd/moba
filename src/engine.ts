@@ -11,6 +11,7 @@ import { createMap, updateMap } from './gameplay/map'
 import { createOrbit } from './visuals/particles'
 import { createCircle, createRectangle } from './visuals/shapes'
 import { startActions } from './events/action'
+import { EventType } from './events/events'
 
 // import { createSmoke } from './visuals/shaders'
 
@@ -50,12 +51,13 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         projectiles,
         eventQueue,
         game: this.game,
+        scene: this,
         performance: {
           getLastDelta: () => lastDelta
         }
       }
 
-      startActions(this, system)
+      startActions(system)
 
       // TODO remove these tests below
 
@@ -94,7 +96,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
       //   follows: player
       // })
 
-      this.game.events.emit('systemReady', system)
+      this.game.events.emit('gameReady', system)
     },
 
     /**
@@ -131,8 +133,9 @@ export async function startEngine (config = CONFIG): Promise<System> {
       game.scale.resize(window.innerWidth, window.innerHeight)
     })
 
-    game.events.once('systemReady', () => {
+    game.events.once('gameReady', () => {
       resolve(system)
+      system.eventQueue.emit(EventType.GAME_READY)
     })
   })
 }
@@ -146,6 +149,7 @@ export function getSystem() {
 
 /**
  * TODO Add the ability to follow the mouse
+ * TODO move this to an Action
  * @param source 
  * @param target 
  * @param duration 
@@ -161,7 +165,7 @@ export function actorFollow(source: Actors, target: Actors, duration: number = 0
     ? target.displayHeight
     : 0
 
-  const unfollow = system.eventQueue.addAction((delta: number) => {
+  const unfollow = system.eventQueue.addUpdate((delta: number) => {
     elapsed += delta
 
     const followX = target.body

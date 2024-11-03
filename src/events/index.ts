@@ -1,6 +1,6 @@
 import { Struct } from '../types'
 import { EventType } from './events'
-import { logInfo } from '../utils/log'
+import { logDebug } from '../utils/log'
 
 /**
  * Implements an EventQueue class that facilitates event handling and dispatching, allowing listeners to subscribe
@@ -51,9 +51,9 @@ type ScheduledEvent = {
 
 type Counter = { [key in EventType]?: number }
 
-type Config = { verbose: boolean }
+type Config = Struct // TODO Config probably needs to be fleshed out
 
-export type Action = {
+export type UpdateRegistration = {
   update: (delta: number) => void
   isComplete?: () => boolean
   onComplete?: () => void
@@ -67,10 +67,8 @@ export default class EventQueue {
   private listeners: Listeners = {}
   private scheduledEvents: ScheduledEvent[] = []
   private counter: { [key in EventType]?: number } = {}
-  private actions: Action[] = []
-  private config: Config = {
-    verbose: false
-  }
+  private updates: UpdateRegistration[] = []
+  private config: Config = {} // TODO Config needs to be defined
 
   constructor (config = this.config) {
     this.config = {
@@ -110,9 +108,7 @@ export default class EventQueue {
       data
     }
 
-    if (this.config.verbose === true) {
-      logInfo(`EventQueue.emit`, payload)
-    }
+    logDebug(`Event: ${eventType} `, payload)
 
     const eventListeners = this.listeners[eventType]
 
@@ -207,39 +203,30 @@ export default class EventQueue {
   /**
    * 
    */
-  removeAction (action: Action) {
-    const index = this.actions.findIndex(e => e === action)
+  removeUpdate (update: UpdateRegistration) {
+    const index = this.updates.findIndex(e => e === update)
     if (index > -1) {
-      if (this.actions[index].onComplete) {
-        this.actions[index].onComplete()
+      if (this.updates[index].onComplete) {
+        this.updates[index].onComplete()
       }
 
-      this.actions.slice(index, 1)
+      this.updates.slice(index, 1)
     }
   }
 
   /**
    * Add Action.  Returns a function that terminates the action
    */
-  addAction(update: Action['update'], isComplete?: Action['isComplete'], onComplete?: Action['onComplete']): () => void {
+  addUpdate(update: UpdateRegistration['update'], isComplete?: UpdateRegistration['isComplete'], onComplete?: UpdateRegistration['onComplete']): () => void {
     const action = {
       update,
       isComplete,
       onComplete
     }
 
-    this.actions.push(action)
+    this.updates.push(action)
 
-    return () => this.removeAction(action)
-    // {
-    //   const index = this.actions.findIndex(e => e === config)
-    //   if (index > -1) {
-    //     if (this.actions[index].onComplete) {
-    //       this.actions[index].onComplete()
-    //     }
-    //     this.actions.slice(index, 1)
-    //   }
-    // }
+    return () => this.removeUpdate(action)
   }
 
   /**
@@ -247,7 +234,7 @@ export default class EventQueue {
    * @param delta
    */
   update (delta: number)  {
-    this.actions.forEach((action, index) => {
+    this.updates.forEach((action, index) => {
       action.update(delta)
 
       if (action.isComplete && action.isComplete()) {
@@ -255,7 +242,7 @@ export default class EventQueue {
           action.onComplete()
         }
 
-        this.actions.splice(index, 1)
+        this.updates.splice(index, 1)
       }
     })
   }

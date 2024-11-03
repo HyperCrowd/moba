@@ -100,7 +100,7 @@ export function setZoom(zoomLevel: number, duration: number = 400): void {
   let elapsed = 0
 
   // Adjust the camera zoom
-  system.eventQueue.addAction((delta: number) => {
+  system.eventQueue.addUpdate((delta: number) => {
     elapsed += delta;
     const t = Phaser.Math.Clamp(elapsed / duration, 0, 1)
     camera.setZoom(Phaser.Math.Linear(initialZoom, zoomLevel, t))
@@ -157,7 +157,7 @@ export function rotate (duration: number, rotations: number = 1): void {
   let elapsed = 0
 
   // Adjust the camera zoom
-  system.eventQueue.addAction((delta: number) => {
+  system.eventQueue.addUpdate((delta: number) => {
     elapsed += delta;
     const t = Phaser.Math.Clamp(elapsed / duration, 0, 1)
     camera.setRotation(Phaser.Math.Linear(0, Math.PI * 2 * rotations, t))

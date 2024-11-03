@@ -35,6 +35,7 @@ export type System = {
   projectiles: Projectiles[]
   eventQueue: EventQueue
   game: Phaser.Game,
+  scene: Phaser.Scene,
   performance: {
     getLastDelta: () => number
   }

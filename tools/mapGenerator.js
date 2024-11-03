@@ -206,8 +206,8 @@ function multiplyMatrices (matrixA, matrixB, transform) {
   for (let i = 0; i < matrixA.length; i++) {
       for (let j = 0; j < matrixA[i].length; j++) {
           result[i][j] = transform
-            ? transform(matrixA[i][j], matrixB[i][j])
-            : matrixA[i][j] * Math.sin(matrixB[i][j]);
+            ? transform(matrixA[i][j], matrixB[i][j], matrixA, matrixB, j, i)
+            : matrixA[i][j] + matrixB[i][j] / 2;
       }
   }
 
@@ -231,6 +231,7 @@ function makeMap (size, height, roughness, mapCount) {
 }
 
 // https://x.com/TyrantsMuse/status/1851548754882560136
+// https://x.com/TyrantsMuse/status/1852824250693898540
 
 // const heightmap = makeMap(12, 255, 250, 1)
 // arrayToPNG(heightmap[0], 'heightmap.png')
@@ -239,8 +240,6 @@ const weatherMask = makeMap(10, 255, 250, 2)
 arrayToPNG(multiplyMatrices(
   weatherMask[0], 
   weatherMask[1], 
-  (a, b) => parseInt(a) & 3
-    ? Math.pow(b, a) % 255
-    : Math.pow(a, b) % 255
+  (a, b) => a * b
 ), 'weatherMask.png')
 

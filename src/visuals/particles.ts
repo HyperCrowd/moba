@@ -77,7 +77,7 @@ function emitZoneFollows (shape: Shapes, emitter: Phaser.GameObjects.Particles.P
     ? follows.displayHeight
     : 0
 
-  const unfollow = system.eventQueue.addAction(() => {
+  const unfollow = system.eventQueue.addUpdate(() => {
     const followX = follows?.body?.position.x as number
     const followY = follows?.body?.position.y as number
 

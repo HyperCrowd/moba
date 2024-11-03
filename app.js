@@ -16,7 +16,7 @@ nw.Window.open(startUri, { icon: './nw.icon.svg' })
 // eslint-disable-next-line no-undef
 const win = nw.Window.get()
 
-// TODO this doesn't load
+// TODO NW.js doesn't like the loaded event
 win.on('loaded', () => {
     win.showDevTools();
 })
