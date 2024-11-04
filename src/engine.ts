@@ -19,8 +19,7 @@ let system: System
 let lastDelta = 0
 
 const CONFIG: Phaser.Types.Core.GameConfig = {
-  type: Phaser.WEBGL,
-  // type: Phaser.AUTO,
+  type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
   scene: {

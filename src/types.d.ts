@@ -34,7 +34,7 @@ export type Projectiles = {
 export type System = {
   cursors: Phaser.Types.Input.Keyboard.CursorKeys,
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
-  map: Phaser.GameObjects.Image
+  map: Phaser.GameObjects.GameObjectFactory.blitter
   maskData: Uint8ClampedArray
   projectiles: Projectiles[]
   eventQueue: EventQueue
