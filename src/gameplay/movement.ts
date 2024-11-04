@@ -86,13 +86,13 @@ function checkPixelCollision(
           // Collision detected; determine which side
           if (pixelX === 0)
             collidingLeft = true
-          
+
           if (pixelX === width - 1)
               collidingRight = true
-          
+
           if (pixelY === 0)
               collidingTop = true
-          
+
           if (pixelY === height - 1)
               collidingBottom = true
         }
