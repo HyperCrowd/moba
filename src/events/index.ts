@@ -1,7 +1,3 @@
-import { Struct } from '../types'
-import { EventType } from './events'
-import { logDebug } from '../utils/log'
-
 /**
  * Implements an EventQueue class that facilitates event handling and dispatching, allowing listeners to subscribe
  * to events, emit them with associated data, and manage scheduled and repeating events.
@@ -30,7 +26,8 @@ import { logDebug } from '../utils/log'
  *   Resets the event counter, useful for integration with game loops.
  **/
 
-// Event listener type
+// Module Types
+
 export type EventPayload = {
   type: EventType
   counter: Counter
@@ -59,6 +56,12 @@ export type UpdateRegistration = {
   onComplete?: () => void
 }
 
+// Module Definition
+
+import { Struct } from '../types'
+import { EventType } from './events'
+import { logDebug } from '../utils/log'
+
 /**
  * This handles and routes all events from all seasons
  */
@@ -70,7 +73,7 @@ export default class EventQueue {
   private updates: UpdateRegistration[] = []
   private config: Config = {} // TODO Config needs to be defined
 
-  constructor (config = this.config) {
+  constructor (config: Config = this.config) {
     this.config = {
       ...this.config,
       ...config
@@ -101,14 +104,14 @@ export default class EventQueue {
   /**
    * Method to emit an event
    */
-  public emit <T> (eventType: EventType, data?: Struct<T>): void {
+  public emit (eventType: EventType, data?: Struct): void {
     const payload: EventPayload = {
       type: eventType,
       counter: this.counter,
       data
     }
 
-    logDebug(`Event: ${eventType} `, payload)
+    logDebug(`Emitting ${eventType} `, payload)
 
     const eventListeners = this.listeners[eventType]
 

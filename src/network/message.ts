@@ -20,9 +20,9 @@ type DataViewMethods = Pick<DataView,
 >
 
 const ID_SIZE = 2
-const INT = 'Int'
-const UINT = 'Uint'
-const FLOAT = 'Float'
+export const INT = 'Int'
+export const UINT = 'Uint'
+export const FLOAT = 'Float'
 
 const setInt8: keyof DataViewMethods = 'setInt8'
 const setUint8: keyof DataViewMethods = 'setUint8'

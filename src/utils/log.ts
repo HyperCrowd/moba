@@ -1,4 +1,4 @@
-import { Any } from "../types"
+import { Any } from '../types'
 
 type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'silly'
 

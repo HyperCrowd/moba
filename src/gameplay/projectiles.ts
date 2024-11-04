@@ -1,3 +1,5 @@
+// Module Types
+
 import type {
   System,
   Projectiles
@@ -6,16 +8,21 @@ import type {
 type Result = Pick<System, 'projectiles'>
 type PointerEvent = { worldX: number, worldY: number}
 
+// Module Definition
+
 import 'phaser'
 import EventQueue from '../events'
+import { EventType } from '../events/events'
+import { act } from '../events/action'
+import { Actions } from '../events/actions'
 import {
-  EventType
-} from '../events/events'
+  createCircleBurst,
+  createFire
+} from '../visuals/particles'
 import {
   FIREBALL_SPEED,
   FIREBALL_RANGE
 } from '../constants'
-import { createCircleBurst, createFire } from '../visuals/particles'
 
 const projectiles: Projectiles[] = []
 
@@ -27,20 +34,13 @@ export function createProjectiles (scene: Phaser.Scene, eventQueue: EventQueue, 
     projectiles
   }
 
-  eventQueue.on(EventType.PROJECTILE_CREATED, (event) => {
-    const pointer = event.data as PointerEvent
-
-    projectiles.push({
-      sprite: scene.physics.add.sprite(player.x, player.y, 'fireball'),
+  scene.input.on('pointerdown', (pointer: PointerEvent) => {
+    act(Actions.CAST_FIREBALL, {
       startX: player.x,
       startY: player.y,
       targetX: pointer.worldX,
       targetY: pointer.worldY
     })
-  })
-
-  scene.input.on('pointerdown', (pointer: PointerEvent) => {
-    eventQueue.emit<PointerEvent>(EventType.PROJECTILE_CREATED, pointer)
   })
 
   eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'projectiles' })

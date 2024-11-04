@@ -5,12 +5,16 @@ export type ENV = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export type Primitive = number | string | boolean | Function | null | Date
+export type Primitive = number | string | boolean | Function | null | Date | unknown
 
 // Define a type for a generalized struct
-export type Struct<T = Struct> = {
-  [key: string]: Primitive | Primitive[] | Struct | Struct[] | T | T[]
-}
+export type Struct = {
+  [key: string]: 
+    | Primitive 
+    | Primitive[]
+    | Struct
+    | Struct[]
+};
 
 export type Any = Primitive | Struct
 

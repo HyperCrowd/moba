@@ -1,25 +1,35 @@
+// Module Types
+
 import type { NetCodeDefinition } from '../network/message'
-import type { Struct } from '../types'
-import type { System } from '../types'
-import { EventType } from './events'
-import { logDebug, logError, logSilly } from '../utils/log'
+import type { Struct, Primitive, System } from '../types'
 
 type ActionResult = {
-  result: Struct
-  errors: Struct
+  result: Struct | Primitive | Primitive[]
+  errors?: Error[]
 }
 
 type ActionResponse = (response: ActionResult) => ActionResult
 
-type ActionFunction = (delta: number, system: System, args: Struct) => ActionResult
+type ActionFunction<T = unknown> = (options: T, system: System) => ActionResult | void
 
-type Action = {
+type Action<T = unknown> = {
   command: string,
-  onAction: ActionFunction,
-  netCode?: NetCodeDefinition
+  onAction: ActionFunction<T>,
+  netCode?: NetCodeDefinition[]
 }
 
-const actions: { [key: string]: Action} = {}
+type Actions =  {
+  [key: string]: Action<unknown>
+}
+
+// Module Definition
+
+import { defineActions } from './actions'
+import { EventType } from './events'
+import { logDebug, logError, logSilly } from '../utils/log'
+
+const actions: Actions = {}
+
 let system: System
 
 /**
@@ -32,21 +42,21 @@ export const startActions = (sys: System) => {
    * 
    */
   system.eventQueue.on(EventType.ACTION_COMPLETED, payload => {
-    logDebug(EventType.ACTION_COMPLETED, payload)
+    logDebug('ACTION_COMPLETED', payload)
   })
 
   /**
    * 
    */
   system.eventQueue.on(EventType.ACTION_FAILED, payload => {
-    logError(EventType.ACTION_COMPLETED, payload)
+    logError('ACTION_FAILED', payload)
   })
 
   /**
    * 
    */
   system.eventQueue.on(EventType.ACTION_REQUESTED, async (payload) => {
-    const data = payload.data ?? {}
+    const data: Struct = payload.data ?? {}
     const actionName = data.name as string
 
     const action = actions[actionName]
@@ -55,20 +65,23 @@ export const startActions = (sys: System) => {
       return
     }
     
-    logSilly(EventType.ACTION_COMPLETED, payload)
+    logSilly('ACTION_REQUESTED', payload)
 
-    const delta = data.delta as number
     const options = data.data as Struct
 
-    const { result, errors } = await action.onAction(delta, system, options);
+    const outcome = await action.onAction(options, system);
+
+    if (outcome === undefined) {
+      return
+    }
 
     const response = {
       name: actionName,
-      result,
-      errors
+      result: outcome.result,
+      errors: outcome.errors
     }
 
-    if (errors === undefined) {
+    if (outcome.errors === undefined || outcome.errors.length === 0) {
       const onComplete = data.onComplete as ActionResponse
       system.eventQueue.emit(EventType.ACTION_COMPLETED, response)
       onComplete(response)
@@ -78,6 +91,8 @@ export const startActions = (sys: System) => {
       onError(response)
     }
   })
+
+  defineActions()
 }
 
 /**
@@ -86,12 +101,30 @@ export const startActions = (sys: System) => {
  * @param args 
  * @param delta 
  */
-export const act = async (name: string, data: Struct, delta: number) => {
+export const act = async (name: string, data: Struct | Primitive[], populateViaNetcode = false) => {
   const promise = new Promise<ActionResult>((resolve, reject) => {
+    if (populateViaNetcode === true) {
+      const action = actions[name]
+
+      if (action === undefined) {
+        return false
+      }
+
+      const newData: Struct = {}
+      const netCode = action.netCode ?? []
+      let i = 0
+
+      for (const variable of netCode) {
+        newData[variable[0]] = (data as Primitive[])[i]
+        i += 1
+      }
+
+      data = newData
+    }
+
     system.eventQueue.emit(EventType.ACTION_REQUESTED, {
       name: name.toLowerCase(),
-      delta,
-      data,
+      data: data as Struct,
       onComplete: resolve,
       onError: reject
     })
@@ -103,13 +136,13 @@ export const act = async (name: string, data: Struct, delta: number) => {
 /**
  * 
  */
-export const createAction = (command: string, onAction: ActionFunction, netCode?: NetCodeDefinition) => {
+export const createAction = <T = unknown>(command: string, onAction: ActionFunction<T>, netCode?: NetCodeDefinition[]) => {
   const lowerCase = command.toLowerCase()
   if (actions[lowerCase] !== undefined) {
-    return actions[lowerCase]
+    return actions[lowerCase] as Action<T>
   }
 
-  const action = {
+  const action: Action<T> = {
     command: lowerCase,
     onAction,
     netCode
@@ -119,7 +152,7 @@ export const createAction = (command: string, onAction: ActionFunction, netCode?
     // TODO register the action to activated by network I/O
   }
 
-  actions[lowerCase] = action
+  actions[lowerCase] = action as Action<unknown>
 
   return action
 }
