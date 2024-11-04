@@ -47,7 +47,7 @@ export const Console = ({ system }: Props) => {
 
     if (event.key === 'Enter' && visible()) {
       const newCommands = [
-        ...commands(),
+        ...commands().slice(0, 100),
         {
           command: input(),
           output: `Output: ${input()}`

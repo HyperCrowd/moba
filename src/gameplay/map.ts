@@ -1,9 +1,10 @@
+// Module Types
+
 import type {
-  // System,
   MaskData
 } from '../types'
 
-// type Result = Pick<System, 'map' | 'maskData'>
+// Module Definition
 
 import 'phaser'
 import EventQueue from '../events'

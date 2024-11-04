@@ -62,16 +62,17 @@ import { Struct } from '../types'
 import { EventType } from './events'
 import { logDebug } from '../utils/log'
 
+
+let nextEventId = 0
 /**
  * This handles and routes all events from all seasons
  */
 export default class EventQueue {
-  private nextEventId = 0
   private listeners: Listeners = {}
   private scheduledEvents: ScheduledEvent[] = []
   private counter: { [key in EventType]?: number } = {}
   private updates: UpdateRegistration[] = []
-  private config: Config = {} // TODO Config needs to be defined
+  private config: Config = {}
 
   constructor (config: Config = this.config) {
     this.config = {
@@ -82,17 +83,19 @@ export default class EventQueue {
 
   /**
    * Method to subscribe to an event
-   **/ 
-  public on(eventType: EventType, listener: EventQueueListener): void {
+   **/
+  public on(eventType: EventType, listener: EventQueueListener): EventQueueListener {
     if (!this.listeners[eventType]) {
       this.listeners[eventType] = []
     }
     this.listeners[eventType]?.push(listener)
+
+    return listener
   }
 
   /**
-   * Method to unsubscribe from an event
-   */
+   * Method to subscribe to an event
+   **/
   public off (eventType: EventType, listener: EventQueueListener): void {
     if (!this.listeners[eventType]) {
       return
@@ -102,9 +105,9 @@ export default class EventQueue {
   }
 
   /**
-   * Method to emit an event
-   */
-  public emit (eventType: EventType, data?: Struct): void {
+   * Method to subscribe to an event
+   **/
+ public emit (eventType: EventType, data?: Struct): void {
     const payload: EventPayload = {
       type: eventType,
       counter: this.counter,
@@ -116,10 +119,7 @@ export default class EventQueue {
     const eventListeners = this.listeners[eventType]
 
     if (eventListeners) {
-      if(this.counter[eventType] === undefined) {
-        this.counter[eventType] = 0
-      }
-      this.counter[eventType] += 1
+      this.counter[eventType] = (this.counter[eventType] || 0) + 1
 
       for (const listener of eventListeners) {
         listener(payload)
@@ -128,26 +128,29 @@ export default class EventQueue {
   }
 
   /**
-   * Method to emit a delayed event
-   */
+   * Method to subscribe to an event
+   **/
   public schedule (eventType: EventType, data: Struct, delay: number): number {
-      const id = this.nextEventId++
-      const timeoutId = setTimeout(() => {
-        this.emit(eventType, data)
-        this.cancel(id) // Cleanup after execution
-      }, delay)
+    const id = nextEventId++
+    const timeoutId = setTimeout(() => {
+      this.emit(eventType, data)
+      this.cancel(id) // Cleanup after execution
+    }, delay)
 
-      this.scheduledEvents.push({ id, type: eventType, timeoutId })
-      return id
+    this.scheduledEvents.push({ id, type: eventType, timeoutId })
+    return id
   }
 
-  /**
-   * Method to cancel a scheduled event
-   */
-  public cancel (id: number): void {
-    const event = this.scheduledEvents.find(e => e.id === id)
 
-    if (event) {
+  /**
+   * Method to subscribe to an event
+   **/
+  public cancel (id: number): void {
+    const eventIndex = this.scheduledEvents.findIndex(e => e.id === id)
+
+    if (eventIndex > -1) {
+      const event = this.scheduledEvents[eventIndex]
+
       if (event.timeoutId) {
         clearTimeout(event.timeoutId)
       }
@@ -156,26 +159,26 @@ export default class EventQueue {
         clearInterval(event.intervalId)
       }
 
-      this.scheduledEvents = this.scheduledEvents.filter(e => e.id !== id)
+      this.scheduledEvents.splice(eventIndex, 1)
     }
   }
 
   /**
    * Method to emit a repeating event
-   */
+   **/
   public repeating (eventType: EventType, data: Struct, interval: number, duration: number): number {
+    const id = nextEventId++
     const endTime = Date.now() + duration
     const intervalId = setInterval(() => {
       if (Date.now() > endTime) {
         clearInterval(intervalId)
-        this.cancel(this.nextEventId)
+        this.cancel(id)
         return
       }
 
       this.emit(eventType, data)
     }, interval)
 
-    const id = this.nextEventId++
     this.scheduledEvents.push({ id, type: eventType, intervalId })
     return id
   }
@@ -185,22 +188,11 @@ export default class EventQueue {
    */
   public once(eventType: EventType, listener: EventQueueListener): void {
     const onceListener: EventQueueListener = (payload) => {
-      // Call the original listener
       listener(payload)
-      
-      // Remove the listener after it has been called
-      this.off(eventType, onceListener) 
+      this.off(eventType, onceListener) // Remove the listener after it has been called
     }
 
-    // Register the wrapped listener
     this.on(eventType, onceListener)
-  }
-
-  /**
-   * Tick-based execution method (for integration with game loop)
-   */
-  public tick(): void {
-    this.counter = {}
   }
 
   /**
@@ -212,14 +204,13 @@ export default class EventQueue {
       if (this.updates[index].onComplete) {
         this.updates[index].onComplete()
       }
-
-      this.updates.slice(index, 1)
+      this.updates.splice(index, 1)
     }
   }
 
   /**
-   * Add Action.  Returns a function that terminates the action
-   */
+   * Method to emit a repeating event
+   **/
   addUpdate(update: UpdateRegistration['update'], isComplete?: UpdateRegistration['isComplete'], onComplete?: UpdateRegistration['onComplete']): () => void {
     const action = {
       update,
@@ -234,8 +225,7 @@ export default class EventQueue {
 
   /**
    *
-   * @param delta
-   */
+   **/
   update (delta: number)  {
     this.updates.forEach((action, index) => {
       action.update(delta)
@@ -244,10 +234,23 @@ export default class EventQueue {
         if (action.onComplete) {
           action.onComplete()
         }
-
         this.updates.splice(index, 1)
       }
     })
+  }
+
+  // Cleanup method to clear scheduled events and listeners
+  public cleanup(): void {
+    this.scheduledEvents.forEach(event => {
+      if (event.timeoutId) {
+        clearTimeout(event.timeoutId)
+      }
+      if (event.intervalId) {
+        clearInterval(event.intervalId)
+      }
+    });
+    this.scheduledEvents = [];
+    this.listeners = {};
   }
 }
 

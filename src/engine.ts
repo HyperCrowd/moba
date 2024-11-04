@@ -26,7 +26,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
     /**
      * 
      */
-    preload: function (this: Phaser.Scene): void {
+    preload: async function (this: Phaser.Scene): Promise<void> {
       this.load.image('map', 'map.jpg')
       this.load.image('mask', 'mask_map.png')
       this.load.image('player', 'player.png')

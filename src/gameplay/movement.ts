@@ -79,17 +79,22 @@ function checkPixelCollision(
       // Check bounds
       if (checkX >= 0 && checkX < maskWidth && checkY >= 0 && checkY < maskHeight) {
         const index = (checkY * maskWidth + checkX) * 4
-        const r = maskData[index]
-        const g = maskData[index + 1]
-        const b = maskData[index + 2]
+        const border = maskData[index]
 
         // Check for a collision (black pixel)
-        if (r === 0 && g === 0 && b === 0) {
+        if (border === 0) {
           // Collision detected; determine which side
-          if (pixelX === 0) collidingLeft = true
-          if (pixelX === width - 1) collidingRight = true
-          if (pixelY === 0) collidingTop = true
-          if (pixelY === height - 1) collidingBottom = true
+          if (pixelX === 0)
+            collidingLeft = true
+          
+          if (pixelX === width - 1)
+              collidingRight = true
+          
+          if (pixelY === 0)
+              collidingTop = true
+          
+          if (pixelY === height - 1)
+              collidingBottom = true
         }
       }
     }
