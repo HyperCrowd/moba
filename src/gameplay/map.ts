@@ -15,8 +15,8 @@ import {
   PLAYER_HEIGHT
 } from '../constants'
 
-const chunkWidth = 256
-const chunkHeight = 256
+const chunkWidth = 256 // TODO put in constants.js
+const chunkHeight = 256 // TODO put in constants.js
 const chunks: Phaser.GameObjects.Bob[]  = []
 const textureName = 'map'
 
@@ -54,13 +54,13 @@ export function createMap (scene: Phaser.Scene, eventQueue: EventQueue) {
     for (let x = 0; x < imageWidth; x += chunkWidth) {
       // Create the frame using the texture key and dimensions
       const frame = new Phaser.Textures.Frame(
-        texture, // The texture object
-        `map-${x}-${y}`, // Name for the frame
-        0, // Use the index variable to track the frame index
-        x, // cutX - X position in the original image
-        y, // cutY - Y position in the original image
-        chunkWidth, // Width of the frame
-        chunkHeight // Height of the frame
+        texture,
+        `map-${x}-${y}`,
+        0,
+        x,
+        y,
+        chunkWidth,
+        chunkHeight
       );
 
       // Create the chunk with the specified texture and frame
@@ -85,7 +85,6 @@ export function createMap (scene: Phaser.Scene, eventQueue: EventQueue) {
  * @param scene 
  */
 export function updateMap (scene: Phaser.Scene) {
-  const vis = []
   const camera = scene.cameras.main
   const cameraView = camera.worldView
 
@@ -106,7 +105,6 @@ export function updateMap (scene: Phaser.Scene) {
     // Only update visibility if it has changed to optimize performance
     if (chunk.visible !== isVisible) {
       chunk.setVisible(isVisible)
-      vis.push(chunk)
     }
   })
 }
