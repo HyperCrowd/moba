@@ -1,48 +1,98 @@
-const chunkWidth = 64
-const chunkHeight = 64
+// Module Types
+
+// import type {
+//   MaskData
+// } from '../types'
+
+// Module Definition
+
+import 'phaser'
+import EventQueue from '../events'
+import {
+  EventType
+} from '../events/events'
+// import {
+//   PLAYER_WIDTH,
+//   PLAYER_HEIGHT
+// } from '../constants'
+import { loadMask } from './masks'
+
+const chunkWidth = 256 // TODO put in constants.js
+const chunkHeight = 256 // TODO put in constants.js
 const chunks: Phaser.GameObjects.Bob[]  = []
-let i = 0
+const textureName = 'map'
 
 /**
  * Create blitter chunks based on the map texture.
  */
-export function createMap (scene: Phaser.Scene, textureName: string = 'map') {
-  const blitter = scene.add.blitter(0, 0, textureName)
+export function createMap (scene: Phaser.Scene, eventQueue: EventQueue) {
+  // Load the mask texture
+  // const canvas = document.getElementById('game') as HTMLCanvasElement
+  // const context = canvas.getContext('2d', {
+  //   willReadFrequently: true
+  // }) as CanvasRenderingContext2D
+
+  // const maskImage = scene.textures.get('mask').getSourceImage() as MaskData
+  // canvas.width = maskImage.width
+  // canvas.height = maskImage.height
+  // context.drawImage(maskImage, 0, 0)
+
+  // const imageData = context.getImageData(
+  //   -(PLAYER_WIDTH / 2),
+  //   -(PLAYER_HEIGHT / 2),
+  //   canvas.width,
+  //   canvas.height
+  // )
+
+  // Load mask
+  const mask = (async () =>  {
+    return loadMask('mask_map.json')
+  })()
+  console.log(mask)
+
+  // Load the map
+  const map = scene.add.blitter(0, 0, textureName)
   const texture = scene.textures.get(textureName)
+
   const image = texture.getSourceImage()
   const imageWidth = image.width
   const imageHeight = image.height
-
+  
   for (let y = 0; y < imageHeight; y += chunkHeight) {
     for (let x = 0; x < imageWidth; x += chunkWidth) {
       // Create the frame using the texture key and dimensions
       const frame = new Phaser.Textures.Frame(
-        texture, // The texture object
-        `map-${x}-${y}`, // Name for the frame
-        i, // Use the index variable to track the frame index
-        x, // cutX - X position in the original image
-        y, // cutY - Y position in the original image
-        chunkWidth, // Width of the frame
-        chunkHeight // Height of the frame
+        texture,
+        `map-${x}-${y}`,
+        0,
+        x,
+        y,
+        chunkWidth,
+        chunkHeight
       );
 
       // Create the chunk with the specified texture and frame
-      const chunk = blitter.create(x, y, frame)
+      const chunk = map.create(x, y, frame)
       chunk.setVisible(false)
       chunks.push(chunk)
-
-      i += 1
     }
   }
 
   scene.cameras.main.setBounds(0, 0, imageWidth, imageHeight)
+
+  eventQueue.emit(EventType.SYSTEM_LOADED, { name: 'map' })
+
+  return {
+    map,
+    maskData: new Uint8ClampedArray() // imageData.data
+  }
 }
 
 /**
- * Update visibility of map chunks based on camera position.
+ * 
  * @param scene 
  */
-export function update(scene: Phaser.Scene) {
+export function updateMap (scene: Phaser.Scene) {
   const camera = scene.cameras.main
   const cameraView = camera.worldView
 

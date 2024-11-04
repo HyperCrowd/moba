@@ -37,6 +37,9 @@ npm install # or pnpm install or yarn install
 * **[SolidJS](https://www.solidjs.com/guides/getting-started)**: The UI system
 * **[PeerJS](https://peerjs.com/docs/#start)**: The P2P system
 * **[NW.js](https://nwjs.readthedocs.io/en/latest/For%20Users/Getting%20Started/)**: The standalone application container
+* Asset Toolchain
+  * ImageMagick
+  * Portrace
 
 ### Commands
 

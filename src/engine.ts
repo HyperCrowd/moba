@@ -7,9 +7,9 @@ import 'phaser'
 import EventQueue from './events'
 import { createMovement, updateMovement } from './gameplay/movement'
 import { createProjectiles, updateProjectiles } from './gameplay/projectiles'
-import { createMap, updateMap } from './gameplay/map'
+import { createMap, updateMap } from './maps'
 import { createOrbit } from './visuals/particles'
-import { createCircle, createRectangle } from './visuals/shapes'
+// import { createCircle, createRectangle } from './visuals/shapes'
 import { startActions } from './events/action'
 import { EventType } from './events/events'
 
@@ -28,7 +28,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      */
     preload: function (this: Phaser.Scene): void {
       this.load.image('map', 'map.jpg')
-      this.load.image('mask', 'mask_map.png')
+      // this.load.image('mask', 'mask_map.png')
       this.load.image('player', 'player.png')
       this.load.image('fireball', 'fireball.png')
     },
@@ -69,27 +69,27 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         follows: player
       })
 
-      createCircle(this, player.x, player.y, {
-        borderWidth: 6,
-        borderColor: 0x000000,
-        colors: [0xff0000],
-        duration: 0,
-        fillType: 'solid',
-        width: 50,
-        follows: player
-      })
+      // createCircle(this, player.x, player.y, {
+      //   borderWidth: 6,
+      //   borderColor: 0x000000,
+      //   colors: [0xff0000],
+      //   duration: 0,
+      //   fillType: 'solid',
+      //   width: 50,
+      //   follows: player
+      // })
 
-      createRectangle(this, player.x + 200, player.y, {
-        borderWidth: 0,
-        borderColor: 0x00ff00,
-        colors: [0x0000ff, 0x008800],
-        duration: 0,
-        fillType: 'pulse',
-        pulseDelay: 500,
-        width: 100,
-        height: 150,
-        follows: player
-      })
+      // createRectangle(this, player.x + 200, player.y, {
+      //   borderWidth: 0,
+      //   borderColor: 0x00ff00,
+      //   colors: [0x0000ff, 0x008800],
+      //   duration: 0,
+      //   fillType: 'pulse',
+      //   pulseDelay: 500,
+      //   width: 100,
+      //   height: 150,
+      //   follows: player
+      // })
 
       // createSmoke(this, player.x, player.y, 100, 100, 10000, {
       //   follows: player

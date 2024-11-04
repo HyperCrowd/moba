@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+import { exec } from 'child_process'
+import util from 'util'
+import path from 'path'
+import fs from 'fs'
+import * as turf from '@turf/turf'
+
+// Promisify exec to use with async/await
+const execAsync = util.promisify(exec)
+const outputPBM = 'output.pbm'
+const outputJSON = 'output.json'
+
+/**
+ * Function to read a GeoJSON file
+ */ 
+function readGeoJSON(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(JSON.parse(data))
+      }
+    })
+  })
+}
+
+/**
+ * Function to optimize GeoJSON using Ramer-Douglas-Peucker algorithm
+ **/ 
+function simplifyGeoJSON(geoJSON, tolerance) {
+  return geoJSON.features.map(feature => {
+    // Ensure the feature has geometry and it's a Polygon or MultiPolygon
+    if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
+      const result = turf.simplify(feature, {
+        tolerance: tolerance,
+        highQuality: false,
+        mutate: true
+      })
+
+      return result.geometry.coordinates
+    }
+  })
+}
+
+/**
+ * Main function to load, optimize, and save GeoJSON
+ */
+async function processGeoJSON(inputFile, outputPath, tolerance) {
+    try {
+      await execAsync(`convert "${inputFile}" -threshold 50% -background white -alpha remove -colorspace gray "${outputPBM}"`)
+      await execAsync(`potrace "${outputPBM}" -O 10 -u 0.05 -b geojson -o "${outputJSON}"`)
+      const geoJSON = await readGeoJSON(outputJSON)
+      const optimizedGeoJSON = simplifyGeoJSON(geoJSON, tolerance)
+      await execAsync(`rm ${outputPBM}`)
+      await execAsync(`rm ${outputJSON}`)
+      fs.writeFileSync(outputPath, JSON.stringify(optimizedGeoJSON, null, 2))
+      console.log(`Optimized mask saved to "${outputPath}"`)
+  } catch (error) {
+      console.error('Error creating mask:', error)
+  }
+}
+
+const inputFilePath = path.resolve(process.argv[2])
+
+if (!inputFilePath) {
+    console.error('Please provide an input file.')
+    process.exit(1)
+}
+
+const outputFilePath = `../public/map_mask.json`
+const tolerance = 1
+
+processGeoJSON(inputFilePath, outputFilePath, tolerance)

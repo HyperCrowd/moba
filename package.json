@@ -33,6 +33,7 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
+    "@turf/turf": "^7.1.0",
     "jsdom": "^24.1.0",
     "peerjs": "^1.5.4",
     "phaser": "3.85.0",
