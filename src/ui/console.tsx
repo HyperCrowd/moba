@@ -54,6 +54,11 @@ export const Console = ({ system }: Props) => {
         }
       ]
 
+      if (input() === 'bug') {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      }
+
       const parts = 'cast_fireball @x @y >x >y'.split(' ') // input().split(' ')
       setCommands(newCommands)
       setInput('')

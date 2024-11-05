@@ -1,7 +1,12 @@
+// Module Types
+
+import type { Coordinate } from './maps/masks'
 import type {
   System,
   Actors
 } from './types.d'
+
+// Module Definitions
 
 import 'phaser'
 import EventQueue from './events'
@@ -12,8 +17,15 @@ import { createOrbit } from './visuals/particles'
 // import { createCircle, createRectangle } from './visuals/shapes'
 import { startActions } from './events/action'
 import { EventType } from './events/events'
-
+import { loadMask } from './maps/masks'
 // import { createSmoke } from './visuals/shaders'
+
+// Phaser cannot handle await/async in the preload/create process, so we preload custom assets here
+const assets: {
+  mask: Coordinate[]
+} = {
+  mask: []
+}
 
 let system: System
 let lastDelta = 0
@@ -36,9 +48,9 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
     /**
      * 
      */
-    create: function (this: Phaser.Scene): void {
+    create: async function (this: Phaser.Scene): Promise<void> {
       const eventQueue = new EventQueue({ verbose: false })
-      const { map, maskData } = createMap(this, eventQueue)
+      const { map, maskData } = createMap(this, eventQueue, assets.mask)
       const { player, cursors } = createMovement(this, eventQueue)
       const { projectiles } = createProjectiles(this, eventQueue, player)
 
@@ -125,7 +137,10 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
  * 
  */
 export async function startEngine (config = CONFIG): Promise<System> { 
+  assets.mask = await loadMask('map_mask.json')
+  
   return new Promise(resolve => {
+
     const game = new Phaser.Game(config)
 
     window.addEventListener('resize', () => {

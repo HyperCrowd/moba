@@ -3,6 +3,7 @@
 // import type {
 //   MaskData
 // } from '../types'
+import { Coordinate } from './masks'
 
 // Module Definition
 
@@ -11,11 +12,6 @@ import EventQueue from '../events'
 import {
   EventType
 } from '../events/events'
-// import {
-//   PLAYER_WIDTH,
-//   PLAYER_HEIGHT
-// } from '../constants'
-import { loadMask } from './masks'
 
 const chunkWidth = 256 // TODO put in constants.js
 const chunkHeight = 256 // TODO put in constants.js
@@ -25,31 +21,7 @@ const textureName = 'map'
 /**
  * Create blitter chunks based on the map texture.
  */
-export function createMap (scene: Phaser.Scene, eventQueue: EventQueue) {
-  // Load the mask texture
-  // const canvas = document.getElementById('game') as HTMLCanvasElement
-  // const context = canvas.getContext('2d', {
-  //   willReadFrequently: true
-  // }) as CanvasRenderingContext2D
-
-  // const maskImage = scene.textures.get('mask').getSourceImage() as MaskData
-  // canvas.width = maskImage.width
-  // canvas.height = maskImage.height
-  // context.drawImage(maskImage, 0, 0)
-
-  // const imageData = context.getImageData(
-  //   -(PLAYER_WIDTH / 2),
-  //   -(PLAYER_HEIGHT / 2),
-  //   canvas.width,
-  //   canvas.height
-  // )
-
-  // Load mask
-  const mask = (async () =>  {
-    return loadMask('mask_map.json')
-  })()
-  console.log(mask)
-
+export function createMap (scene: Phaser.Scene, eventQueue: EventQueue, mask: Coordinate[]) {
   // Load the map
   const map = scene.add.blitter(0, 0, textureName)
   const texture = scene.textures.get(textureName)
@@ -76,6 +48,10 @@ export function createMap (scene: Phaser.Scene, eventQueue: EventQueue) {
       chunk.setVisible(false)
       chunks.push(chunk)
     }
+  }
+
+  for (const coord of mask) {
+    scene.add.image(coord[0], coord[1], 'player')
   }
 
   scene.cameras.main.setBounds(0, 0, imageWidth, imageHeight)

@@ -36,7 +36,7 @@ function simplifyGeoJSON(geoJSON, tolerance) {
       const result = turf.simplify(feature, {
         tolerance: tolerance,
         highQuality: false,
-        mutate: true
+        mutate: false
       })
 
       return result.geometry.coordinates
@@ -49,7 +49,7 @@ function simplifyGeoJSON(geoJSON, tolerance) {
  */
 async function processGeoJSON(inputFile, outputPath, tolerance) {
     try {
-      await execAsync(`convert "${inputFile}" -threshold 50% -background white -alpha remove -colorspace gray "${outputPBM}"`)
+      await execAsync(`convert "${inputFile}" -threshold 50% -background white -alpha remove -colorspace gray -flip "${outputPBM}"`)
       await execAsync(`potrace "${outputPBM}" -O 10 -u 0.05 -b geojson -o "${outputJSON}"`)
       const geoJSON = await readGeoJSON(outputJSON)
       const optimizedGeoJSON = simplifyGeoJSON(geoJSON, tolerance)
