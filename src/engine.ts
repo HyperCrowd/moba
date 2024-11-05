@@ -1,6 +1,6 @@
 // Module Types
 
-import type { Coordinate } from './maps/masks'
+import type { Line } from './maps/masks'
 import type {
   System,
   Actors
@@ -22,7 +22,7 @@ import { loadMask } from './maps/masks'
 
 // Phaser cannot handle await/async in the preload/create process, so we preload custom assets here
 const assets: {
-  mask: Coordinate[]
+  mask: Line[]
 } = {
   mask: []
 }
@@ -40,6 +40,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      */
     preload: function (this: Phaser.Scene): void {
       this.load.image('map', 'map.jpg')
+      this.load.image('dot', 'black_pixel.png')
       // this.load.image('mask', 'mask_map.png')
       this.load.image('player', 'player.png')
       this.load.image('fireball', 'fireball.png')

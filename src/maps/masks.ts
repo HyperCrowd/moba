@@ -4,7 +4,7 @@ export type Coordinate = [number, number]
 type Segment = Coordinate[]
 type Area = Segment[]
 export type MapStructure = Area[]
-type Line = [Coordinate, Coordinate]
+export type Line = [Coordinate, Coordinate]
 
 // Module Definition
 
@@ -74,7 +74,7 @@ const getCoordinateCandidates = (x: number) => {
  */
 export const loadMask = async (url: string) => {
   const mask = await fetchJSON(url) as MapStructure
-  const result: Coordinate[] = []
+  const result: Line[] = []
   
 
   for (const area of mask) {
@@ -115,10 +115,13 @@ export const loadMask = async (url: string) => {
             lastCoord
           ])
 
+          result.push([
+            coordinate,
+            lastCoord
+          ])
+
           lastCoord = undefined
         }
-
-        result.push(coordinate)
       }
     }
   }

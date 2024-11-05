@@ -3,7 +3,7 @@
 // import type {
 //   MaskData
 // } from '../types'
-import { Coordinate } from './masks'
+import { Line } from './masks'
 
 // Module Definition
 
@@ -18,10 +18,35 @@ const chunkHeight = 256 // TODO put in constants.js
 const chunks: Phaser.GameObjects.Bob[]  = []
 const textureName = 'map'
 
+function createLine(scene: Phaser.Scene, startX: number, startY: number, endX: number, endY: number) {
+  // Create the image (the 1x1 black pixel)
+  const line = scene.add.image(startX, startY, 'dot'); // 'dot' is a 1x1 black pixel
+
+  // Calculate the horizontal (dx) and vertical (dy) distances
+  const dx = endX - startX;
+  const dy = endY - startY;
+
+  // Calculate the length (distance) of the line
+  const length = Math.sqrt(dx * dx + dy * dy); // Pythagorean theorem: sqrt(dx^2 + dy^2)
+
+  // Calculate the angle of the line
+  const angle = Math.atan2(dy, dx); // atan2 handles both positive and negative slopes
+
+  // Stretch the pixel to the correct length
+  line.setDisplaySize(length, 1);  // 1px height, scale width to length
+
+  // Rotate the line segment to match the angle of the line
+  line.setRotation(angle);
+
+  // Optionally, you can use the `setOrigin` to align the line properly.
+  // For example, setting the origin to the center of the image ensures it's placed correctly at the start point
+  line.setOrigin(0.5, 0.5); // Center the image at the start point
+}
+
 /**
  * Create blitter chunks based on the map texture.
  */
-export function createMap (scene: Phaser.Scene, eventQueue: EventQueue, mask: Coordinate[]) {
+export function createMap (scene: Phaser.Scene, eventQueue: EventQueue, mask: Line[]) {
   // Load the map
   const map = scene.add.blitter(0, 0, textureName)
   const texture = scene.textures.get(textureName)
@@ -51,7 +76,7 @@ export function createMap (scene: Phaser.Scene, eventQueue: EventQueue, mask: Co
   }
 
   for (const coord of mask) {
-    scene.add.image(coord[0], coord[1], 'player')
+    createLine(scene, coord[0][0], coord[0][1], coord[1][0], coord[1][1])
   }
 
   scene.cameras.main.setBounds(0, 0, imageWidth, imageHeight)
