@@ -51,7 +51,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      */
     create: async function (this: Phaser.Scene): Promise<void> {
       const eventQueue = new EventQueue({ verbose: false })
-      const { map, maskData } = createMap(this, eventQueue, assets.mask)
+      const { map } = createMap(this, eventQueue, assets.mask)
       const { player, cursors } = createMovement(this, eventQueue)
       const { projectiles } = createProjectiles(this, eventQueue, player)
 
@@ -59,7 +59,6 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
         cursors,
         player,
         map,
-        maskData,
         projectiles,
         eventQueue,
         game: this.game,

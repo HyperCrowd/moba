@@ -8,8 +8,14 @@ import * as turf from '@turf/turf'
 
 // Promisify exec to use with async/await
 const execAsync = util.promisify(exec)
-const outputPBM = 'output.pbm'
-const outputJSON = 'output.json'
+
+const PNG_THRESHOLD = 50
+const CURVE_THRESHOLD = 1
+const PIXEL_QUANTIZE = 25
+const JSON_TOLERATNCE = 0.75
+const OUTPUT_PBM = 'output.pbm'
+const OUTPUT_JSON = 'output.json'
+const FINAL_MASK = `../public/map_mask.json`
 
 /**
  * Function to read a GeoJSON file
@@ -47,12 +53,12 @@ function simplifyGeoJSON(geoJSON, tolerance) {
 /**
  * Main function to load, optimize, and save GeoJSON
  */
-async function processGeoJSON(inputFile, outputPath, tolerance) {
+async function processGeoJSON(inputFile, outputPath = FINAL_MASK) {
     try {
-      await execAsync(`convert "${inputFile}" -threshold 50% -background white -alpha remove -colorspace gray -flip "${outputPBM}"`)
-      await execAsync(`potrace "${outputPBM}" -O 10 -u 0.05 -b geojson -o "${outputJSON}"`)
+      await execAsync(`convert "${inputFile}" -threshold ${PNG_THRESHOLD}% -background white -alpha remove -colorspace gray -flip "${OUTPUT_PBM}"`)
+      await execAsync(`potrace "${outputPBM}" -O ${CURVE_THRESHOLD} -u ${PIXEL_QUANTIZE} -b geojson -o "${OUTPUT_JSON}"`)
       const geoJSON = await readGeoJSON(outputJSON)
-      const optimizedGeoJSON = simplifyGeoJSON(geoJSON, tolerance)
+      const optimizedGeoJSON = simplifyGeoJSON(geoJSON, JSON_TOLERATNCE)
       await execAsync(`rm ${outputPBM}`)
       await execAsync(`rm ${outputJSON}`)
       fs.writeFileSync(outputPath, JSON.stringify(optimizedGeoJSON, null, 2))
@@ -69,7 +75,4 @@ if (!inputFilePath) {
     process.exit(1)
 }
 
-const outputFilePath = `../public/map_mask.json`
-const tolerance = 1
-
-processGeoJSON(inputFilePath, outputFilePath, tolerance)
+processGeoJSON(inputFilePath)
