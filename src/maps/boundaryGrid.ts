@@ -101,56 +101,7 @@ class BoundaryGrid {
     // Return the list of grid cells as an array of strings (e.g., "x,y")
 
     return Array.from(cells)
-  }
-
-  /**
-   * Get all cells the line intersects (simple algorithm)
-   */
-  private old_getCoveredCells(line: Line): string[] {
-    const [x1, y1] = line[0];
-    const [x2, y2] = line[1];
-  
-    // Absolute deltas for step size
-    const dx = Math.abs(x2 - x1);
-    const dy = Math.abs(y2 - y1);
-  
-    // Determine step direction
-    const sx = x1 < x2 ? 1 : -1;
-    const sy = y1 < y2 ? 1 : -1;
-  
-    const cells = new Set<string>();
-  
-    let x = x1;
-    let y = y1;
-  
-    // Add initial position to the set (this is the starting point)
-    cells.add(this.getCellKey(x, y));
-  
-    // While we're not yet at the final point (x2, y2)
-    while (x !== x2 || y !== y2) {
-      if (dx > dy) {
-        // Move in the x direction if dx > dy
-        x += sx;
-      } else if (dy > dx) {
-        // Move in the y direction if dy > dx
-        y += sy;
-      } else {
-        // If the line is diagonal (dx == dy), move in both directions
-        x += sx;
-        y += sy;
-      }
-  
-      // Check if the current position is out of bounds (don't add out-of-bounds cells)
-      if (x < 0 || y < 0 || x >= MAP_WIDTH || y >= MAP_HEIGHT) {
-        break;  // Exit the loop if we're out of bounds
-      }
-  
-      // Add the current position to the set
-      cells.add(this.getCellKey(x, y));
-    }
-  
-    return Array.from(cells);
-  }
+  } 
 
   // Get nearby lines based on actor's position
   public getNearbyLines(ax: number, ay: number): Line[] {
