@@ -1,6 +1,6 @@
 // Module Types
 
-import type { Line } from './maps/masks'
+import type { Line } from './maps/types'
 import type {
   System,
   Actors
@@ -22,9 +22,9 @@ import { loadMask } from './maps/masks'
 
 // Phaser cannot handle await/async in the preload/create process, so we preload custom assets here
 const assets: {
-  mask: Line[]
+  boundaries: Line[]
 } = {
-  mask: []
+  boundaries: []
 }
 
 let system: System
@@ -41,7 +41,6 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
     preload: function (this: Phaser.Scene): void {
       this.load.image('map', 'map.jpg')
       this.load.image('dot', 'black_pixel.png')
-      // this.load.image('mask', 'mask_map.png')
       this.load.image('player', 'player.png')
       this.load.image('fireball', 'fireball.png')
     },
@@ -51,9 +50,14 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      */
     create: async function (this: Phaser.Scene): Promise<void> {
       const eventQueue = new EventQueue({ verbose: false })
-      const { map } = createMap(this, eventQueue, assets.mask)
+      const { map } = createMap(this, eventQueue, )
       const { player, cursors } = createMovement(this, eventQueue)
       const { projectiles } = createProjectiles(this, eventQueue, player)
+
+      // TODO move to debug 
+      // for (const coord of assets.boundaries) {
+      //   createLine(this, coord[0][0], coord[0][1], coord[1][0], coord[1][1])
+      // }
 
       system = {
         cursors,
@@ -137,7 +141,7 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
  * 
  */
 export async function startEngine (config = CONFIG): Promise<System> { 
-  assets.mask = await loadMask('map_mask.json')
+  assets.boundaries = await loadMask('map_mask.json')
   
   return new Promise(resolve => {
 

@@ -16,6 +16,8 @@ import {
   PLAYER_X,
   PLAYER_Y,
   PLAYER_SPEED,
+  PLAYER_WIDTH,
+  PLAYER_HEIGHT,
   MAP_WIDTH,
   MAP_HEIGHT
 } from '../constants'
@@ -24,8 +26,8 @@ import {
 } from './camera'
 import { hasMaskCollisions } from '../maps/masks'
 
-let xArrow: Phaser.GameObjects.Graphics
-let yArrow: Phaser.GameObjects.Graphics
+const halfWidth = Math.floor(PLAYER_WIDTH / 2)
+const halfHeight = Math.floor(PLAYER_HEIGHT / 2)
 
 let keyUp: Phaser.Input.Keyboard.Key
 let keyRight: Phaser.Input.Keyboard.Key
@@ -49,10 +51,6 @@ export function createMovement (scene: Phaser.Scene, eventQueue: EventQueue): Re
   initializeCamera(scene)
   followEntity(player)
 
-  // TODO move to debug overlay
-  xArrow = scene.add.graphics()
-  yArrow = scene.add.graphics()
-
    // TODO: Custom movement keybindings?
   keyUp = keyboard.addKey('W')
   keyRight = keyboard.addKey('D')
@@ -67,21 +65,6 @@ export function createMovement (scene: Phaser.Scene, eventQueue: EventQueue): Re
   }
 }
 
-// TODO move to debug overlay
-function drawArrow (arrow: Phaser.GameObjects.Graphics, sx: number, sy: number, vx: number, vy: number, color: number) {
-  arrow.clear()
-  // Draw the arrow (create a line first)
-  arrow.lineStyle(2, color, 1);
-  arrow.beginPath();
-  arrow.moveTo(sx, sy);
-  arrow.lineTo(sx + vx, sy + vy);
-  arrow.strokePath();
-
-  arrow.lineStyle(2, color, 1);
-  arrow.beginPath();
-  arrow.strokePath();
-}
-
 /**
  * 
  */
@@ -94,43 +77,35 @@ export function updateMovement (scene: Phaser.Scene, system: System): void {
   let desiredVelocityY = 0
 
   // Calculate desired velocity based on input and collision state
-  if ((system.cursors.left.isDown || keyboard.checkDown(keyLeft, 0))) {
+  if (system.cursors.left.enabled && (system.cursors.left.isDown || keyboard.checkDown(keyLeft, 0))) {
     desiredVelocityX = -PLAYER_SPEED
   }
 
-  if ((system.cursors.right.isDown || keyboard.checkDown(keyRight, 0))) {
+  if (system.cursors.right.enabled && (system.cursors.right.isDown || keyboard.checkDown(keyRight, 0))) {
     desiredVelocityX = PLAYER_SPEED
   }
 
-  if ((system.cursors.up.isDown || keyboard.checkDown(keyUp, 0))) {
+  if (system.cursors.up.enabled && (system.cursors.up.isDown || keyboard.checkDown(keyUp, 0))) {
     desiredVelocityY = -PLAYER_SPEED
   }
 
-  if ((system.cursors.down.isDown || keyboard.checkDown(keyDown, 0))) {
+  if (system.cursors.down.enabled && (system.cursors.down.isDown || keyboard.checkDown(keyDown, 0))) {
     desiredVelocityY = PLAYER_SPEED
   }
 
-  // Check for potential collisions with the desired velocity
-  const newX = system.player.x + desiredVelocityX
-  const newY = system.player.y + desiredVelocityY
+  if (desiredVelocityX !== 0 || desiredVelocityY !== 0) {
+    // Check for potential collisions with the desired velocity
+    const newX = system.player.x + (desiredVelocityX / halfWidth)
+    const newY = system.player.y + (desiredVelocityY / halfHeight)
 
-  // TODO move to debug overlay
-  drawArrow(xArrow, system.player.x, system.player.y, desiredVelocityX, 0, 0xff0000)
-  drawArrow(yArrow, system.player.x, system.player.y, 0, desiredVelocityY, 0x0000ff)
-  
-  const collision = hasMaskCollisions(newX, newY)
+    const collision = hasMaskCollisions(newX, newY, PLAYER_WIDTH, PLAYER_HEIGHT)
 
-  switch (collision) {
-    case 0: // top
-    case 2: // bottom
-    desiredVelocityY = 0
-      break
-    case 1: // right
-    case 3: // left
-    desiredVelocityX = 0
-      break
+    if (collision === true) {
+      // TODO be more selective about velocity halting
+      desiredVelocityX = 0
+      desiredVelocityY = 0
+    }
   }
-
 
   // Apply the calculated velocities
   system.player.setVelocityX(desiredVelocityX)

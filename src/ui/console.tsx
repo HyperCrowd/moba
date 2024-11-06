@@ -45,25 +45,45 @@ export const Console = ({ system }: Props) => {
       toggleConsole()
     }
 
-    if (event.key === 'Enter' && visible()) {
+    const isVisible = visible() === true
+
+    if (isVisible === true) {
+      event.stopImmediatePropagation()
+      system.cursors.up.enabled = false
+      system.cursors.right.enabled = false
+      system.cursors.down.enabled = false
+      system.cursors.left.enabled = false
+      system.cursors.space.enabled = false
+      system.cursors.shift.enabled = false
+    } else {
+      system.cursors.up.enabled = true
+      system.cursors.right.enabled = true
+      system.cursors.down.enabled = true
+      system.cursors.left.enabled = true
+      system.cursors.space.enabled = true
+      system.cursors.shift.enabled = true
+    }
+
+    const textInput = input()
+
+    if (event.key === 'Enter' && isVisible) {
       const newCommands = [
         ...commands().slice(0, 100),
         {
-          command: input(),
-          output: `Output: ${input()}`
+          command: textInput,
+          output: `Output: ${textInput}`
         }
       ]
 
-      if (input() === 'bug') {
+      if (textInput === 'debugger') {
         // eslint-disable-next-line no-debugger
         debugger;
       }
 
-      const parts = 'cast_fireball @x @y >x >y'.split(' ') // input().split(' ')
+      const parts = textInput.split(' ')
       setCommands(newCommands)
       setInput('')
 
-      // TODO suspend WASD!
 
       const options = parts.slice(1).map(o => {
         if (o[0] === '@') {
@@ -84,7 +104,7 @@ export const Console = ({ system }: Props) => {
       if (result !== false) {
         setOutputs([...outputs(), `"${parts[0]}" does not exist`])
       } else {
-        setOutputs([...outputs(), input()])
+        setOutputs([...outputs(), textInput])
       }
       
       if (historyRef) {
