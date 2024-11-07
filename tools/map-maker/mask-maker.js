@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { exec } from 'child_process'
 import util from 'util'
 import path from 'path'
@@ -55,12 +53,16 @@ function simplifyGeoJSON(geoJSON, tolerance) {
  */
 async function processGeoJSON(inputFile, outputPath = FINAL_MASK) {
     try {
+//       const a = `convert heightmap.png -level 10%,100% darken.png
+// convert darken.png -colorspace Gray -threshold 20% low-mask.png
+// convert darken.png -colorspace Gray -negate -threshold 20% high-mask.png
+// convert low-mask.png high-mask.png -compose Multiply -composite mask.png`
       await execAsync(`convert "${inputFile}" -threshold ${PNG_THRESHOLD}% -background white -alpha remove -colorspace gray -flip "${OUTPUT_PBM}"`)
-      await execAsync(`potrace "${outputPBM}" -O ${CURVE_THRESHOLD} -u ${PIXEL_QUANTIZE} -b geojson -o "${OUTPUT_JSON}"`)
-      const geoJSON = await readGeoJSON(outputJSON)
+      await execAsync(`potrace "${OUTPUT_PBM}" -O ${CURVE_THRESHOLD} -u ${PIXEL_QUANTIZE} -b geojson -o "${OUTPUT_JSON}"`)
+      const geoJSON = await readGeoJSON(OUTPUT_JSON)
       const optimizedGeoJSON = simplifyGeoJSON(geoJSON, JSON_TOLERATNCE)
-      await execAsync(`rm ${outputPBM}`)
-      await execAsync(`rm ${outputJSON}`)
+      await execAsync(`rm ${OUTPUT_PBM}`)
+      await execAsync(`rm ${OUTPUT_JSON}`)
       fs.writeFileSync(outputPath, JSON.stringify(optimizedGeoJSON, null, 2))
       console.log(`Optimized mask saved to "${outputPath}"`)
   } catch (error) {
