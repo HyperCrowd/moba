@@ -1,6 +1,13 @@
+import fs from 'fs'
+import { PNG } from 'pngjs'
 import { DsMap } from './diamond-square.js'
-import { matrixToPNG } from './png.js'
 import algos from './algos.js'
+import { colorize } from './colorize.js'
+import { exec } from 'child_process'
+import util from 'util'
+
+// Promisify exec to use with async/await
+const execAsync = util.promisify(exec)
 
 const { averaging, thickBrush, grass, waterways, cityLimits } = algos
 
@@ -30,6 +37,40 @@ function multiplyMatrices (matrixA, matrixB, transform) {
 
   return result
 }
+
+/**
+ * 
+ */
+export async function matrixToPNG(data, filePath) {
+	const width = data.length
+	const height = data[0].length
+
+	// Create a new PNG instance
+	const png = new PNG({ width, height })
+
+	// Populate PNG data
+	for (let x = 0; x < width; x++) {
+		for (let y = 0; y < height; y++) {
+			// Round to the nearest integer
+			const value = Math.round(data[x][y])
+			
+			// Calculate the pixel index
+			const idx = (width * y + x) << 2
+
+			png.data[idx] = value     // R
+			png.data[idx + 1] = value // G
+			png.data[idx + 2] = value // B
+			png.data[idx + 3] = 255   // Alpha
+		}
+	}
+
+	// Write the PNG to a file
+	return new Promise(resolve => {
+		png.pack().pipe(fs.createWriteStream(filePath))
+			.on('finish', resolve)
+	})
+}
+
 
 /**
  * 
@@ -86,13 +127,29 @@ async function buildMap (fileName, transform = averaging, size = MAP_SIZE, rough
   return buildMapFromComponents(fileName, components, transform)
 }
 
+/**
+ * 
+ */
 async function main () {
   // Primary Heightmap
   const { components } = await buildMap('heightmap', averaging)
   await buildMapFromComponents('grass', components, grass)
-  await buildMapFromComponents('waterways', components, waterways)
+  await buildMapFromComponents('ridges', components, waterways)
   await buildMapFromComponents('thickBrush', components, thickBrush)
-  await buildMapFromComponents('cityLimits', components, cityLimits)
+  await buildMapFromComponents('river', components, cityLimits)
+
+  await colorize('grass', 'grasslands', 75)
+  await colorize(['heightmap', 'terrain'], 'grassTerrain')
+  await colorize('thickBrush', 'vegetation', 75, 175)
+  await colorize('ridges', 'ridges', 125, 150)
+  await colorize('river', 'river', 20, 21)
+
+  await execAsync(`convert \
+  output/grass.png output/thickBrush.png -compose blend -define compose:args=100,20 -composite \
+  output/ridges.png -compose blend -define compose:args=5,100 -composite \
+  output/river.png -compose blend -define compose:args=100,100 -composite \
+  output/terrain.png -geometry +0+0 -composite output/map.png`)
+
 }
 
 main()

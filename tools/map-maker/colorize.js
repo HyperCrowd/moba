@@ -105,15 +105,22 @@ function precomputePaletteColors (palette) {
  * @param {string} paletteName - The name of the palette to use (e.g., 'grasslands').
  * @param {string} outputFile - Path to save the output PNG.
  */
-export async function colorize(inputFile, paletteName, outputFile, alphaThresholdBelow = 0, alphaThresholdAbove = 255) {
+export async function colorize(pngFile, paletteName, alphaThresholdBelow = 0, alphaThresholdAbove = 255) {
   const palette = palettes[paletteName];
+  const inputFile = pngFile instanceof Array
+    ? pngFile[0]
+    : pngFile
+  const outputFile = pngFile instanceof Array
+    ? pngFile[1]
+    : pngFile
+
 
   if (!palette) {
     throw new Error(`Palette "${paletteName}" not found.`);
   }
 
   // Load the grayscale PNG file
-  const image = await loadPNG(inputFile);
+  const image = await loadPNG(`output/${inputFile}.png`);
 
   const colors = precomputePaletteColors(palette)
 
@@ -136,9 +143,5 @@ export async function colorize(inputFile, paletteName, outputFile, alphaThreshol
   }
 
   // Save the modified image
-  await savePNG(image, outputFile)
+  await savePNG(image, `output/${outputFile}.png`)
 }
-
-colorize('output/grass.png', 'grasslands', 'output/grass-1.png', 75)
-colorize('output/heightmap.png', 'grassTerrain', 'output/heightmap-1.png')
-colorize('output/thickBrush.png', 'grassTerrain', 'output/thickBrush-1.png', 0, 250)
