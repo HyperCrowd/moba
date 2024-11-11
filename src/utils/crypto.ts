@@ -1,3 +1,13 @@
+import { SipHash13 } from './siphash'
+
+/**
+ * 
+ */
+export function getSip (keyStr: string, message: string) {
+  const key = SipHash13.string16_to_key(keyStr)
+  return SipHash13.hash_hex(key, message)
+}
+
 /**
  * 
  */

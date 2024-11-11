@@ -11,7 +11,7 @@ const execAsync = util.promisify(exec)
 
 const { averaging, thickBrush, grass, waterways, cityLimits } = algos
 
-const MAP_SIZE = 10
+const MAP_SIZE = 12
 const MAP_HEIGHT = 255
 const ROUGHNESS = 500
 const MAP_COUNT = 2
