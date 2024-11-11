@@ -1,5 +1,6 @@
 import type { PublicMembers } from '../types'
 import type { EffectJSON } from './effect'
+
 import { Value } from './value'
 import { isChildOfType } from './hierarchy/query'
 import { getTypeById } from './hierarchy/index'
@@ -23,7 +24,7 @@ export class Entity {
   // Tags for the entity
   tags: string[]
 
-  //
+  // Active effects on the entity
   effects: Effect[]
 
   // What entities the Entity is focused on
@@ -41,12 +42,16 @@ export class Entity {
       throw new RangeError(`${config.type} is not a valid hierachy node ID`)
     }
 
+    const focus = config.focus instanceof EntityManager
+      ? config.focus
+      : new EntityManager(config.focus as EntityJSON[] || [])
+
     this.id = config.id
     this.type = type
     this.name = config.name
     this.tags = config.tags || []
     this.effects = config.effects || []
-    this.focus = new EntityManager(config.focus || [])
+    this.focus = focus
   }
 
   /**

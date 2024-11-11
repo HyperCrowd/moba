@@ -1,7 +1,13 @@
-import type { Entity } from './index'
+import type { Entity } from '../index'
 import type { Modifier } from '../modifier'
 import { HierarchyNode } from './node'
 import { hierarchy, getTypeById } from './index'
+
+type CriteriaCheck = (candidates: Entity | Modifier) => boolean
+type QueryCriteria = Modifier | {
+  targets: string[]
+  criteria: string
+}
 
 const percentRegex = /\.[A-Za-z_]+\s*===\s*([0-9]+\.?[0-9]*)%/g
 const andRegex = / AND /g
@@ -11,7 +17,8 @@ const equalRegex = /=/g
 const tagsRegex = /tags *= *(["'][^"']+["'])/g
 const propertyRegex = /([A-Za-z_]+)/g
 const hierarchyCache: Record<string, HierarchyNode[]> = {}
-const criteriaCache = {}
+const criteriaCache: Record<string, CriteriaCheck> = {}
+
 
 /**
  * 
@@ -65,7 +72,7 @@ export const getCriteriaFilter = (conditions: string) => {
         .replace(propertyRegex, 'entity.$1.amount')
         .replace(percentRegex, '.isPercentDifference($1)')
 
-    const newFunc = new Function('entity', code)
+    const newFunc = new Function('entity', code) as CriteriaCheck
     criteriaCache[conditions] = newFunc
   }
 
@@ -75,8 +82,8 @@ export const getCriteriaFilter = (conditions: string) => {
 /**
  *
  */
-export const query = (candidates: Entity[] | Modifier[], modifiers: Modifier[]) => {
-  const hierarchy = []
+export const query = (candidates: Entity[] | Modifier[], modifiers: QueryCriteria[]) => {
+  const hierarchy: HierarchyNode[] = []
   const criterias = []
   const results = []
 

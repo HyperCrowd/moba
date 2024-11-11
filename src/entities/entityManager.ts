@@ -1,27 +1,26 @@
-import type { EntityJson } from './index'
+import type { EntityJSON } from './index'
 import { Entity } from './index'
 import { query } from './hierarchy/query'
-import { UniqueArray } from '../common/uniqueArray'
+import { UniqueArray } from '../utils/uniqueArray'
 
 export class EntityManager extends UniqueArray<Entity> {
   /**
    *
    */
-  static fromJSON (json: string) {
-    const entityManagerJson = JSON.parse(json)
-    return new EntityManager(entityManagerJson)
-  }
-
-  /**
-   *
-   */
-  constructor (list: (EntityJson | Entity)[] = []) {
-    super(list.map((entityJson: EntityJson) => {
+  constructor (list: (EntityJSON | Entity)[] = []) {
+    super(list.map((entityJson: EntityJSON) => {
       return entityJson instanceof Entity
         ? entityJson
         : new Entity(entityJson)
     }))
 
+  }
+
+  /**
+   *
+   */
+  getIndexById (id: number) {
+    return this.list.findIndex(item => item.id === id)
   }
 
   /**

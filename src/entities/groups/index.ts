@@ -1,12 +1,11 @@
-import type { PartialPublicMembers } from '../../common/types'
-import type { EffectJson } from './effect'
+import type { PublicMembers } from '../../types'
+import type { EffectJSON } from '../effect'
 import { Value } from '../value'
 import { defaultAdjustment } from '../effect'
 import { getModifierById, GroupModifierTarget } from '../modifiers'
-import { getClock } from '../../world/clock'
 import { Entity } from '../index'
 
-type GroupJson = PartialPublicMembers<Group>
+type GroupJson = PublicMembers<Group>
 
 export enum GroupType {
   Faction,
@@ -91,7 +90,7 @@ export class Group extends Entity {
   /**
    * Add an effect
    */
-  addEffect (modifierId: number, personnelId: number, adjustments: EffectJson = defaultAdjustment): void {
+  addEffect (modifierId: number, personnelId: number, adjustments: EffectJSON = defaultAdjustment): void {
     const person = this.hasPerson(personnelId)
 
     if (person === false) {
