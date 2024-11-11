@@ -1,30 +1,24 @@
-import type { Struct } from '../../types'
+import type { Struct, PublicMembers } from '../../types'
+
+type HierarchyNodeJSON = Partial<PublicMembers<HierarchyNode>>
 
 export class HierarchyNode {
-  name: string
-  lowerName: string
   id: number
-  idStr: string
+  name: string
+  private lowerName: string
+  private idStr: string
   children: HierarchyNode[] = []
 
   /**
    *
    */
-  static fromJSON (json: string) {
-    const data: Struct = JSON.parse(json)
+  static fromJSON (config: HierarchyNodeJSON) {
+    const entity = new HierarchyNode(config)
 
-    const entity = new HierarchyNode
-      (data.id as number,
-      data.name as string
-    )
-
-    const children = data.children as Struct[]
+    const children = config.children || []
 
     children.forEach(child => {
-      const node = new HierarchyNode(
-        child.id as number,
-        child.name as string
-      )
+      const node = new HierarchyNode(child)
 
       entity.children.push(node)
     })
@@ -35,11 +29,19 @@ export class HierarchyNode {
   /**
    *
    */
-  constructor (id: number, name: string) {
-    this.id = id
-    this.idStr = id.toString()
-    this.name = name
-    this.lowerName = name.toLowerCase()
+  constructor (config: HierarchyNodeJSON) {
+    if (config.id === undefined) {
+      throw new RangeError(`HierarchyNode needs id defined, ${config.id} received`)
+    }
+
+    if (config.name === undefined) {
+      throw new RangeError(`HierarchyNode needs name defined, ${config.name} received`)
+    }
+
+    this.id = config.id
+    this.idStr = this.id.toString()
+    this.name = config.name
+    this.lowerName = this.name.toLowerCase()
   }
 
   /**
@@ -85,7 +87,7 @@ export class HierarchyNode {
     const parts = parentParts || targets.split('.')
     const i = partsIndex || 0
     const len = parts.length - 1
-    const part = parts[i]
+    const part = parts[i].toLowerCase()
 
     if (part === this.idStr || part === this.lowerName) {
       // The hierarchy entity matches the targeting type
@@ -117,8 +119,8 @@ export class HierarchyNode {
   /**
    *
    */
-  getAllChildren (result: HierarchyNode[] = [], target?: HierarchyNode) {
-    for (const child of (target || this).children) {
+  getAllChildren (result: HierarchyNode[] = [], target: HierarchyNode = this) {
+    for (const child of target.children) {
       result.push(child)
 
       this.getAllChildren(result, child)

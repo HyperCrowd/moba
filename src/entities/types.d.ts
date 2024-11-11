@@ -1,4 +1,4 @@
-import type { NumericKeyPair } from "../types"
+import type { NumericKeyPair } from '../types'
 
 export enum FalloffType {
   None,

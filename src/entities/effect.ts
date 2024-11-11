@@ -1,16 +1,17 @@
-import type { Struct, PartialPublicMembers, NumericKeyPair } from '../types'
-import type { ModifierJson } from './modifier'
+import type { Struct, PublicMembers, NumericKeyPair } from '../types'
+import type { ModifierJSON } from './modifier'
 import { getModifierById } from './modifiers'
+import type { ModifierImpact } from './types'
 
-type EffectJson = PartialPublicMembers<Effect>
+export type EffectJSON = PublicMembers<Effect>
 
 export const defaultAdjustment = {
   duration: 0,
   amount: 0,
   target: 0,
   falloffType: 0,
-  tags: [],
-  maxStacks: 0
+  maxStacks: 0,
+  tags: []
 }
 
 export class Effect {
@@ -19,54 +20,44 @@ export class Effect {
   // The modifier the effect applies
   public readonly modifierId: number
 
-  // This person needs to be active for the effect to be active
-  public readonly demographyId: number
-
-  // The Current Degree the effect starts at
+    // The Current Degree the effect starts at
   public readonly startsAt: number
 
   // The Current Degree the effect ends at
   public readonly endsAt: number
 
   // What adjustments are applied to the modifier before the effect makes an impact
-  public readonly adjustments: ModifierJson
+  public readonly adjustments: ModifierJSON
 
-  /**
-   *
-   */
-  static fromJSON (json: string) {
-    const effectJson: Struct = JSON.parse(json)
-
-    return new Effect(effectJson)
-  }
-
-  constructor (options: EffectJson) {
-    this.id = options.id ?? 0 // TODO default value
-    this.modifierId = options.modifierId ?? 0 // TODO default value
-    this.demographyId = options.demographyId ?? 0 // TODO default value
-    this.startsAt = options.startsAt ?? 0 // TODO default value
-    this.endsAt = options.endsAt ?? 0 // TODO default value
+  constructor (options: EffectJSON) {
+    this.id = options.id
+    this.modifierId = options.modifierId
+    this.startsAt = options.startsAt
+    this.endsAt = options.endsAt ?? -1
     this.adjustments = options.adjustments || defaultAdjustment
   }
 
   /**
    *
    */
-  toJSON () {
-    return JSON.stringify({
+  toJSON (): Struct {
+    return {
       id: this.id,
       modifierId: this.modifierId,
-      demographyId: this.demographyId,
       startsAt: this.startsAt,
       endsAt: this.endsAt,
       adjustments: this.adjustments
-    })
+    }
   }
 
   /**
    *
    */
   isActive (currentTime: number) {
+    if (this.endsAt === -1) {
+      return true
+    }
+
     if (currentTime < this.startsAt) {
       return false
     }
@@ -89,7 +80,7 @@ export class Effect {
    *
    */
   getImpact (currentTime: number): NumericKeyPair | false {
-    const modifier = this.getModifier(this.modifierId)
+    const modifier = getModifierById(this.modifierId)
 
     if (modifier === false) {
       return false
@@ -97,14 +88,15 @@ export class Effect {
 
     const falloffFactor = modifier.getFalloffFactor(currentTime, this.startsAt, this.endsAt)
 
-    const impact = { ...modifier.impact }
-    const result = {}
+    const impact: ModifierImpact = { ...modifier.impact }
+    const result: NumericKeyPair = {}
 
     for (const key of Object.keys(impact)) {
-      let value = impact[key]
+      const target = key as keyof ModifierJSON
+      let value = impact[target]
 
-      if (this.adjustments[key]) {
-        value += this.adjustments[key]
+      if (this.adjustments[target] !== undefined) {
+        value += this.adjustments[target] as number
       }
 
       value *= falloffFactor

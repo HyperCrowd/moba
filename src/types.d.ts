@@ -18,16 +18,9 @@ export type Struct = {
 
 export type Any = Primitive | Struct
 
-// export type PublicMembers<T> = {
-//   [K in keyof T]: T[K] extends (...args: Any[]) => Any ? never : T[K];
-// }
-
 export type PublicMembers<T> = {
-  [K in keyof T]?: T[K];
+  [K in keyof T]: T[K];
 };
-
-
-export type PartialPublicMembers<T> = Partial<PublicMembers<T>>
 
 export type NumericKeyPair = {
 [key: string]: number

@@ -1,7 +1,7 @@
 import type { Entity } from './index'
-import type { Modifier } from './modifier'
+import type { Modifier } from '../modifier'
 import { HierarchyNode } from './node'
-import { hierarchy } from './index'
+import { hierarchy, getTypeById } from './index'
 
 const percentRegex = /\.[A-Za-z_]+\s*===\s*([0-9]+\.?[0-9]*)%/g
 const andRegex = / AND /g
@@ -10,13 +10,13 @@ const notEqualRegex = /!=/g
 const equalRegex = /=/g
 const tagsRegex = /tags *= *(["'][^"']+["'])/g
 const propertyRegex = /([A-Za-z_]+)/g
-const hierarchyCache = {}
+const hierarchyCache: Record<string, HierarchyNode[]> = {}
 const criteriaCache = {}
 
 /**
  * 
  */
-export const getEntityType = (query: string) => {
+export const getEntityType = (query: string): HierarchyNode[] => {
   if (hierarchyCache[query] === undefined) {
     // Build a new search
     hierarchyCache[query] = hierarchy.search(query.toLowerCase())
@@ -35,6 +35,13 @@ export const isChildOfType = (child: HierarchyNode, type: HierarchyNode) => {
   }
 
   return hierarchyCache[type.id].find(c => c === child) !== undefined
+}
+
+/**
+ * 
+ */
+export const isChildOfTypeById = (childId: number, typeId: number) => {
+  return isChildOfType(getTypeById(childId), getTypeById(typeId))
 }
 
 /**

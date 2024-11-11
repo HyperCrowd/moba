@@ -38,8 +38,10 @@ export class SnowflakeIDGenerator {
     if (timestamp === this.lastTimestamp) {
       this.sequence = (this.sequence + 1) & SEQUENCE_MASK; // Wrap sequence number if it exceeds 12 bits
       if (this.sequence === 0) {
-        // Wait for next millisecond if sequence overflows
-        while (Date.now() === timestamp) {}
+        
+        while (Date.now() === timestamp) {
+          // Wait for next millisecond if sequence overflows
+        }
       }
     } else {
       this.sequence = 0; // Reset sequence for new timestamp

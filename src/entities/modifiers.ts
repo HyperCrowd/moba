@@ -1,11 +1,12 @@
 import { Modifier } from './modifier'
 import { FalloffType } from './types'
 
-type IModifiers = {
+type Modifiers = {
   [key: string]: Modifier
 }
+type ModifiersKey = keyof Modifiers | undefined
 
-const Modifiers: IModifiers = {
+const modifiers: Modifiers = {
   famous: new Modifier({
     id: 0,
     name: 'Famous',
@@ -20,16 +21,16 @@ const Modifiers: IModifiers = {
   })
 }
 
-const modifierKeys = Object.keys(Modifiers)
+const modifierKeys = Object.keys(modifiers)
 
 /**
  *
  */
 export const getModifierById = (modifierId: number) => {
-  const key: keyof IModifiers | undefined = modifierKeys.find(key => Modifiers[key].id === modifierId)
+  const key: ModifiersKey = modifierKeys.find(key => modifiers[key].id === modifierId)
 
   if (key !== undefined) {
-    return Modifiers[key]
+    return modifiers[key]
   } else {
     return false
   }

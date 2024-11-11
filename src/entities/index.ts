@@ -1,12 +1,14 @@
-import type { EffectJson } from './effect'
+import type { PublicMembers } from '../types'
+import type { EffectJSON } from './effect'
 import { Value } from './value'
 import { isChildOfType } from './hierarchy/query'
 import { getTypeById } from './hierarchy/index'
 import { HierarchyNode } from './hierarchy/node'
 import { getModifierById } from './modifiers'
 import { EntityManager } from './entityManager'
+import { Effect } from './effect'
 
-// export type EntityJson = PartialPublicMembers<Entity>
+export type EntityJSON = PublicMembers<Entity>
 
 export class Entity {
   // Group ID
@@ -30,29 +32,21 @@ export class Entity {
   /**
    *
    */
-  static fromJSON (json: string) {
-    const entityJson = JSON.parse(json)
-    return new Entity(entityJson)
-  }
-
-  /**
-   *
-   */
-  constructor(options: EntityJson) {
-    const type = typeof options.type === 'number'
-      ? getTypeById(options.type)
-      : options.type
+  constructor(config: EntityJSON) {
+    const type = typeof config.type === 'number'
+      ? getTypeById(config.type)
+      : config.type
 
     if (type === null) {
-      throw new RangeError(`${entityJson.type} is not a valid hierachy node ID`)
+      throw new RangeError(`${config.type} is not a valid hierachy node ID`)
     }
 
-    this.id = options.id
+    this.id = config.id
     this.type = type
-    this.name = options.name
-    this.tags = options.tags || []
-    this.effects = options.effect || []
-    this.focus = new EntityManager(options.focus || [])
+    this.name = config.name
+    this.tags = config.tags || []
+    this.effects = config.effects || []
+    this.focus = new EntityManager(config.focus || [])
   }
 
   /**
@@ -72,7 +66,7 @@ export class Entity {
   /**
    *
    */
-  protected prepareValue (name: string, options: EntityJson): Value {
+  protected prepareValue (name: string, options: EntityJSON): Value {
     return new Value(options[name] || Value.getDefault())
   }
 
@@ -94,7 +88,7 @@ export class Entity {
   /**
    * Add an effect
    */
-  addEffect (modifierId: number, demographyId: number = this.id, adjustments: EffectJson = defaultAdjustment): void {
+  addEffect (modifierId: number, demographyId: number = this.id, adjustments: EffectJSON = defaultAdjustment): void {
     const modifier = getModifierById(modifierId)
 
     if (modifier === false) {
@@ -164,6 +158,22 @@ export class Entity {
    */
   filterFocus (targets: string[], criteria: string) {
     this.find(targets, criteria)
+  }
+
+  /**
+   *
+   */
+  addModifier (modifier: Modifier, modifiers: Modifier[]): Modifier[] {
+    const existingModifiers = modifiers.filter(element => element.id === modifier.id)
+
+    if (existingModifiers.length > 0 && existingModifiers.length + 1 > existingModifiers[0].maxStacks) {
+      // Do not add the modifier, it will exceed the maximum stacks
+      return modifiers
+    }
+
+    modifiers.push(modifier)
+
+    return modifiers
   }
 
   /**

@@ -1,13 +1,11 @@
-import type { PartialPublicMembers } from '../types'
-import type { ModifierImpact }  from './types'
-import type { Entity } from './index'
-import { FalloffType }  from './types'
-import { getTypeById } from './hierarchy/index'
-import { isChildOfType, getEntityType, query } from './hierarchy/query'
+import type { Struct, PublicMembers } from '../types'
+import { type ModifierImpact, FalloffType } from './types'
+import { Entity } from './index'
+import { isChildOfTypeById, getEntityType, query } from './hierarchy/query'
 
 // Define enum for falloff types
 
-export type ModifierJson = PartialPublicMembers<Modifier>
+export type ModifierJSON = Partial<PublicMembers<Modifier>>
 
 // Define interface for Modifiers
 export class Modifier {
@@ -27,33 +25,26 @@ export class Modifier {
   /**
    *
    */
-  static fromJSON (json: string) {
-    const modifierJson = JSON.parse(json)
-    const type = getTypeById(modifierJson.type)
-
-    if (type === null) {
-      throw new RangeError(`${modifierJson.type} is not a valid hierachy node ID`)
-    }
-
-    modifierJson.type = type
-
-
-    return new Modifier(modifierJson)
+  static fromJSON (config: ModifierJSON) {
+    return new Modifier(config)
   }
 
-  constructor (options: ModifierJson) {
-    this.id = options.id ?? 0 // TODO figure out default value
-    this.name = options.name ?? '' // TODO figure out default value
-    this.description = options.description ?? '' // TODO figure out default value
-    this.type = options.type  ?? 0 // TODO figure out default value
-    this.duration = options.duration ?? 0 // TODO figure out default value
+  /**
+   * 
+   */
+  constructor (options: ModifierJSON) {
+    this.id = options.id ?? -1
+    this.name = options.name ?? 'Please add a name'
+    this.description = options.description ?? 'Please add a description' // TODO figure out default value
+    this.type = options.type ?? 1 // Entity
+    this.duration = options.duration ?? -1 // Infinite
     this.impact = options.impact ?? {}
     this.amount = options.amount ?? 0
     this.targets = options.targets ?? []
     this.criteria = options.criteria ?? '*'
-    this.falloffType = options.falloffType ?? 0 // TODO figure out default value
+    this.falloffType = options.falloffType ?? 0 // None
     this.tags = options.tags ?? []
-    this.maxStacks = options.maxStacks ?? 0 // TODO figure out default value
+    this.maxStacks = options.maxStacks ?? 1
 
     Object.freeze(this)
   }
@@ -61,8 +52,8 @@ export class Modifier {
   /**
    *
    */
-  toJSON () {
-    return JSON.stringify({
+  toJSON (): Struct {
+    return {
       id: this.id,
       name: this.name,
       description: this.description,
@@ -74,7 +65,7 @@ export class Modifier {
       falloffType: this.falloffType,
       tags: this.tags,
       maxStacks: this.maxStacks
-    })
+    }
   }
 
   /**
@@ -128,21 +119,23 @@ export class Modifier {
   /**
    *
    */
-  canTarget (entity: Entity | Modifier) {
-    const targets = []
-    
+  canTarget (entity: Entity | Modifier): boolean {
     for (const target of this.targets) {
-      getEntityType(target).forEach(type => targets.push(type))
+      for (const type of getEntityType(target)) {
+        if (entity.type === type.id) {
+          return true
+        }
+      }
     }
 
-    return targets.indexOf(entity.type) > -1
+    return false
   }
 
   /**
    *
    */
   isChildOfType (type: number) {
-    return isChildOfType(this.type, type)
+    return isChildOfTypeById(this.type, type)
   }
 
   /**
