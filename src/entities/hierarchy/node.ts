@@ -1,6 +1,6 @@
 import type { Struct, PublicMembers } from '../../types'
 
-type HierarchyNodeJSON = Partial<PublicMembers<HierarchyNode>>
+type HierarchyNodeJSON = PublicMembers<HierarchyNode>
 
 export class HierarchyNode {
   id: number
@@ -15,10 +15,12 @@ export class HierarchyNode {
   static fromJSON (config: HierarchyNodeJSON) {
     const entity = new HierarchyNode(config)
 
-    const children = config.children || []
-
+    const children = config.children ?? []
+    
     children.forEach(child => {
-      const node = new HierarchyNode(child)
+      const node = child instanceof HierarchyNode
+        ? child
+        : new HierarchyNode(child)
 
       entity.children.push(node)
     })

@@ -8,10 +8,10 @@ export class EntityManager extends UniqueArray<Entity> {
    *
    */
   constructor (list: (EntityJSON | Entity)[] = []) {
-    super(list.map((entityJson: EntityJSON) => {
-      return entityJson instanceof Entity
-        ? entityJson
-        : new Entity(entityJson)
+    super(list.map((config) => {
+      return config instanceof Entity
+        ? config
+        : new Entity(config)
     }))
 
   }

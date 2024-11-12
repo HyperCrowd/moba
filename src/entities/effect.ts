@@ -15,7 +15,7 @@ export const defaultAdjustment = {
 }
 
 export class Effect {
-  public readonly id: number
+  public readonly id?: number // TODO autogenerate?
 
   // The modifier the effect applies
   public readonly modifierId: number
@@ -29,12 +29,12 @@ export class Effect {
   // What adjustments are applied to the modifier before the effect makes an impact
   public readonly adjustments: ModifierJSON
 
-  constructor (options: EffectJSON) {
-    this.id = options.id
-    this.modifierId = options.modifierId
-    this.startsAt = options.startsAt
-    this.endsAt = options.endsAt ?? -1
-    this.adjustments = options.adjustments || defaultAdjustment
+  constructor (config: EffectJSON) {
+    this.id = config.id ?? 0
+    this.modifierId = config.modifierId ?? -1
+    this.startsAt = config.startsAt ?? -1
+    this.endsAt = config.endsAt ?? -1
+    this.adjustments = config.adjustments || defaultAdjustment
   }
 
   /**

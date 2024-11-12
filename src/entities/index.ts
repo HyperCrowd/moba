@@ -1,13 +1,12 @@
 import type { PublicMembers } from '../types'
-import type { EffectJSON } from './effect'
 
-import { Value } from './value'
 import { isChildOfType } from './hierarchy/query'
 import { getTypeById } from './hierarchy/index'
 import { HierarchyNode } from './hierarchy/node'
 import { getModifierById } from './modifiers'
 import { EntityManager } from './entityManager'
 import { Effect } from './effect'
+import { Modifier, ModifierJSON } from './modifier'
 
 export type EntityJSON = PublicMembers<Entity>
 
@@ -36,7 +35,7 @@ export class Entity {
   constructor(config: EntityJSON) {
     const type = typeof config.type === 'number'
       ? getTypeById(config.type)
-      : config.type
+      : config.type as HierarchyNode
 
     if (type === null) {
       throw new RangeError(`${config.type} is not a valid hierachy node ID`)
@@ -44,11 +43,11 @@ export class Entity {
 
     const focus = config.focus instanceof EntityManager
       ? config.focus
-      : new EntityManager(config.focus as EntityJSON[] || [])
+      : new EntityManager((config.focus ?? []) as EntityJSON[])
 
-    this.id = config.id
-    this.type = type
-    this.name = config.name
+    this.id = config.id ?? -1
+    this.type = type ?? -1
+    this.name = config.name ?? 'Please provide a name'
     this.tags = config.tags || []
     this.effects = config.effects || []
     this.focus = focus
@@ -69,31 +68,9 @@ export class Entity {
   }
 
   /**
-   *
-   */
-  protected prepareValue (name: string, options: EntityJSON): Value {
-    return new Value(options[name] || Value.getDefault())
-  }
-
-  /**
-   *
-   */
-  isAlive (demographyId: number = this.id) {
-    return this.getDemography(demographyId) !== false
-  }
-
-  /**
-   *
-   */
-  getDemography (demographyId: number = this.id) {
-    const populationWindow = getPopulationWindow()
-    return populationWindow.getPerson(demographyId)
-  }
-
-  /**
    * Add an effect
    */
-  addEffect (modifierId: number, demographyId: number = this.id, adjustments: EffectJSON = defaultAdjustment): void {
+  addEffect (modifierId: number, currentTime: number, adjustments: ModifierJSON): Effect | boolean {
     const modifier = getModifierById(modifierId)
 
     if (modifier === false) {
@@ -108,20 +85,17 @@ export class Entity {
       return false
     }
 
-    const duration = modifier.duration + adjustments.duration
+    const duration = modifier.duration + (adjustments.duration ?? 0)
 
     if (duration <= 0) {
       // The duration is less than or equal to 0
       return false
     }
 
-    const clock = getClock()
-
     const effect = new Effect({
       modifierId,
-      demographyId,
-      startsAt: clock.currentDegree,
-      endsAt: clock.currentDegree + modifier.duration,
+      startsAt: currentTime,
+      endsAt: currentTime + modifier.duration,
       adjustments
     })
 
@@ -184,18 +158,18 @@ export class Entity {
   /**
    *
    */
-  isEffectActive (effectId: number, currentDegree: number) {
+  isEffectActive (effectId: number, currentTime: number) {
     const effect = this.effects.find(effect => effectId === effect.id)
 
-    if (effect === null) {
+    if (effect === undefined) {
       return false
     }
 
-    if (currentDegree < effect.startsAt) {
+    if (currentTime < effect.startsAt) {
       return false
     }
 
-    if (currentDegree >= effect.endsAt) {
+    if (currentTime >= effect.endsAt) {
       return false
     }
 

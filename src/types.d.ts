@@ -18,12 +18,13 @@ export type Struct = {
 
 export type Any = Primitive | Struct
 
-export type PublicMembers<T> = {
-  [K in keyof T]: T[K];
-};
+export type PublicMembers<T> = Partial<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K];
+}>;
 
 export type NumericKeyPair = {
-[key: string]: number
+  [key: string]: number
 }
 
 export type MaskData = CanvasImageSource & {
