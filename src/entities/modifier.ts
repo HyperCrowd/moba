@@ -1,7 +1,7 @@
 import type { Struct, PublicMembers } from '../types'
 import { type ModifierImpact, FalloffType } from './types'
 import { Entity } from './index'
-import { isChildOfTypeById, getEntityType, query } from './hierarchy/query'
+import { isChildOfType, getEntityType, query } from './hierarchy/query'
 
 // Define enum for falloff types
 
@@ -36,7 +36,7 @@ export class Modifier {
     this.id = options.id ?? -1
     this.name = options.name ?? 'Please add a name'
     this.description = options.description ?? 'Please add a description' // TODO figure out default value
-    this.type = options.type ?? 1 // Entity
+    this.type = options.type ?? 1 // HierarchyNode
     this.duration = options.duration ?? -1 // Infinite
     this.impact = options.impact ?? {}
     this.amount = options.amount ?? 0
@@ -135,7 +135,7 @@ export class Modifier {
    *
    */
   isChildOfType (type: number) {
-    return isChildOfTypeById(this.type, type)
+    return isChildOfType(this.type, type)
   }
 
   /**

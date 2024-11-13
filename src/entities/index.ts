@@ -1,8 +1,6 @@
 import type { PublicMembers } from '../types'
 
 import { isChildOfType } from './hierarchy/query'
-import { getTypeById } from './hierarchy/index'
-import { HierarchyNode } from './hierarchy/node'
 import { getModifierById } from './modifiers'
 import { EntityManager } from './entityManager'
 import { Effect } from './effect'
@@ -15,7 +13,7 @@ export class Entity {
   id: number
 
   // Group type
-  type: HierarchyNode
+  type: number
 
   // Name of the group
   name: string
@@ -33,20 +31,12 @@ export class Entity {
    *
    */
   constructor(config: EntityJSON) {
-    const type = typeof config.type === 'number'
-      ? getTypeById(config.type)
-      : config.type as HierarchyNode
-
-    if (type === null) {
-      throw new RangeError(`${config.type} is not a valid hierachy node ID`)
-    }
-
     const focus = config.focus instanceof EntityManager
       ? config.focus
       : new EntityManager((config.focus ?? []) as EntityJSON[])
 
     this.id = config.id ?? -1
-    this.type = type ?? -1
+    this.type = config.type ?? -1
     this.name = config.name ?? 'Please provide a name'
     this.tags = config.tags || []
     this.effects = config.effects || []
@@ -59,7 +49,7 @@ export class Entity {
   toJSON () {
     return {
       id: this.id,
-      type: this.type.id,
+      type: this.type,
       name: this.name,
       tags: this.tags,
       effects: this.effects,
@@ -114,29 +104,29 @@ export class Entity {
   /**
    *
    */
-  addFocus (entity: Entity | number) {
+  addFocus (entity: Entity) {
     return this.focus.add(entity)
   }
 
   /**
    *
    */
-  removeFocus (entityOrId: Entity | number) {
-    return this.focus.remove(entityOrId)
+  removeFocus (entity: Entity) {
+    return this.focus.removeByItem(entity)
   }
 
   /**
    *
    */
-  isFocusedOn (entityOrId: Entity | number) {
-    return this.focus.getIndex(entityOrId) > -1
+  isFocusedOn (entity: Entity) {
+    return this.focus.getIndexByItem(entity) > -1
   }
 
   /**
    *
    */
   filterFocus (targets: string[], criteria: string) {
-    this.find(targets, criteria)
+    this.focus.find(targets, criteria)
   }
 
   /**

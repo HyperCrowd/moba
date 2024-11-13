@@ -35,20 +35,21 @@ export const getEntityType = (query: string): HierarchyNode[] => {
 /**
  * 
  */
-export const isChildOfType = (child: HierarchyNode, type: HierarchyNode) => {
-  if (hierarchyCache[type.id] === undefined) {
+export const isChildOfType = (child: HierarchyNode | number, type: HierarchyNode | number) => {
+  const childId = child instanceof HierarchyNode
+    ? child.id
+    : child
+
+  const typeId = type instanceof HierarchyNode
+    ? type.id
+    : type
+  
+  if (hierarchyCache[typeId] === undefined) {
     // Build a new child list
-    hierarchyCache[type.id] = hierarchy.getAllChildren([], type)
+    hierarchyCache[typeId] = hierarchy.getAllChildren([], getTypeById(typeId))
   }
 
-  return hierarchyCache[type.id].find(c => c === child) !== undefined
-}
-
-/**
- * 
- */
-export const isChildOfTypeById = (childId: number, typeId: number) => {
-  return isChildOfType(getTypeById(childId), getTypeById(typeId))
+  return hierarchyCache[typeId].find(c => c.id === childId) !== undefined
 }
 
 /**
@@ -84,24 +85,26 @@ export const getCriteriaFilter = (conditions: string) => {
  */
 export const query = (candidates: Entity[] | Modifier[], modifiers: QueryCriteria[]) => {
   const hierarchy: HierarchyNode[] = []
-  const criterias = []
-  const results = []
+  const criterias: CriteriaCheck[] = []
+  const results: (Entity | Modifier)[] = []
 
   for (const modifier of modifiers) {
     criterias.push(getCriteriaFilter(modifier.criteria))
 
     for (const target of modifier.targets) {
       // Get hierarchy targets
-      getEntityType(target).forEach(entity => hierarchy.push(entity))
+      getEntityType(target).forEach(hierarchyNode => hierarchy.push(hierarchyNode))
     }
   }
 
   for (const candidate of candidates) {
-    const found = candidate.type instanceof Array
-      ? hierarchy.some(hier => candidate.type.includes(hier))
-      : hierarchy.indexOf(candidate.type) > -1
+    // const found = candidate.type instanceof Array
+    //   ? hierarchy.some(hier => candidate.type.includes(hier))
+    //   : hierarchy.indexOf(candidate.type) > -1
 
-    if (found) {
+    const found = hierarchy.find(hierarchyNode => hierarchyNode.id === candidate.type)
+
+    if (found !== undefined) {
       // Candidate has a type of the targeted hierarchies
       for (const criteria of criterias) {
         if(criteria(candidate) === true) {
