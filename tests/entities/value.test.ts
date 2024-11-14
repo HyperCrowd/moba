@@ -1,4 +1,3 @@
-// sum.test.js
 import { expect, test } from 'vitest'
 import { Value } from '../../src/entities/value'
 
@@ -39,6 +38,7 @@ test('Entities.Value: Basic Test', () => {
   expect(value.isPercentDifferent(-75)).toBe(true)
 })
 
+// TODO complete this test
 test.skip('Entities.Value: Modifier Test', () => {
   // const value = new Value({
   //   amount: 50,

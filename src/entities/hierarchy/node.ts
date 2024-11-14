@@ -12,25 +12,6 @@ export class HierarchyNode {
   /**
    *
    */
-  static fromJSON (config: HierarchyNodeJSON) {
-    const entity = new HierarchyNode(config)
-
-    const children = config.children ?? []
-    
-    children.forEach(child => {
-      const node = child instanceof HierarchyNode
-        ? child
-        : new HierarchyNode(child)
-
-      entity.children.push(node)
-    })
-
-    return entity
-  }
-
-  /**
-   *
-   */
   constructor (config: HierarchyNodeJSON) {
     if (config.id === undefined) {
       throw new RangeError(`HierarchyNode needs id defined, ${config.id} received`)
@@ -44,6 +25,16 @@ export class HierarchyNode {
     this.idStr = this.id.toString()
     this.name = config.name
     this.lowerName = this.name.toLowerCase()
+
+    const children = config.children ?? []
+    
+    children.forEach(child => {
+      const node = child instanceof HierarchyNode
+        ? child
+        : new HierarchyNode(child)
+
+      this.children.push(node)
+    })
   }
 
   /**
@@ -64,9 +55,20 @@ export class HierarchyNode {
   /**
    *
    */
-  display (level = 0) {
-    console.log(`${' '.repeat(level * 2)}${this.name}`)
-    this.children.forEach(child => child.display(level + 1))
+  display (toConsole = true, level = 0) {
+    let message = ''
+
+    message += `${' '.repeat(level * 2)}${this.name}`
+
+    this.children.forEach(child => {
+      message += '\n' + child.display(false, level + 1)
+    })
+
+    if (toConsole) {
+      console.info(message)
+    }
+
+    return message
   }
 
   /**

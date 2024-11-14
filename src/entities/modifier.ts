@@ -82,8 +82,8 @@ export class Modifier {
   /**
    *
    */
-  getFalloffFactor (currentDegree: number, startTime: number, endTime: number) {
-    const completion = (currentDegree - startTime) / endTime
+  getFalloffFactor (currentTime: number, startTime: number, endTime: number) {
+    const completion = (currentTime - startTime) / endTime
     let factor = 1
 
     switch (this.falloffType) {
