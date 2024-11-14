@@ -104,12 +104,23 @@ export class Value {
   /**
    * 
    */
-  isPercentDifference (percent: number): boolean {
-    const range = this._maximum - this._minimum
-    const decimal = percent / 100
-
-    return percent > 0
-      ? this._amount <= range * (decimal)
-      : this._amount >= range * (1 - -decimal)
+  getPercentage (value: number = this._amount) {
+    return ((value - this._minimum) / (this._maximum - this._minimum)) * 100;
   }
+
+  /**
+   * 
+   */
+  isPercentDifferent(percent: number, value: number = this._amount): boolean {
+    const range = this._maximum - this._minimum;
+    const decimal = percent / 100;
+
+    if (percent > 0) {
+        // Check if the amount is less than or equal to the value corresponding to the percentage of the range
+        return value <= this._minimum + range * decimal;
+    } else {
+        // Check if the amount is greater than or equal to the value corresponding to the negative percentage of the range
+        return value >= this._maximum - range * Math.abs(decimal);
+    }
+}
 }

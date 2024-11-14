@@ -98,10 +98,6 @@ export const query = (candidates: Entity[] | Modifier[], modifiers: QueryCriteri
   }
 
   for (const candidate of candidates) {
-    // const found = candidate.type instanceof Array
-    //   ? hierarchy.some(hier => candidate.type.includes(hier))
-    //   : hierarchy.indexOf(candidate.type) > -1
-
     const found = hierarchy.find(hierarchyNode => hierarchyNode.id === candidate.type)
 
     if (found !== undefined) {
