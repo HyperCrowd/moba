@@ -1,5 +1,6 @@
 import type { Struct, PublicMembers } from '../types'
-import { type ModifierImpact, FalloffType } from './types'
+import type { ModifierImpact } from './types'
+import { FalloffType } from './constants'
 import { Entity } from './index'
 import { isChildOfType, getEntityType, query } from './hierarchy/query'
 

@@ -39,7 +39,7 @@ test('Entities.Value: Basic Test', () => {
 })
 
 // TODO complete this test
-test.skip('Entities.Value: Modifier Test', () => {
+test('Entities.Value: Modifier Test', () => {
   // const value = new Value({
   //   amount: 50,
   //   minimum: 0,

@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { HierarchyNode } from './../../src/entities/hierarchy/node'
 
-// TODO complete this test
 test('Entities.HierarchyNode: Basic Test', () => {
   // Simple
   const parent = new HierarchyNode({

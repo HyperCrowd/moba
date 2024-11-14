@@ -79,12 +79,8 @@ export class Effect {
   /**
    *
    */
-  getImpact (currentTime: number): NumericKeyPair | false {
+  getImpact (currentTime: number): NumericKeyPair {
     const modifier = getModifierById(this.modifierId)
-
-    if (modifier === false) {
-      return false
-    }
 
     const falloffFactor = modifier.getFalloffFactor(currentTime, this.startsAt, this.endsAt)
 
@@ -92,6 +88,7 @@ export class Effect {
     const result: NumericKeyPair = {}
 
     for (const key of Object.keys(impact)) {
+
       const target = key as keyof ModifierJSON
       let value = impact[target]
 

@@ -1,5 +1,5 @@
 import { Modifier } from './modifier'
-import { FalloffType } from './types'
+import { FalloffType } from './constants'
 
 type Modifiers = {
   [key: string]: Modifier
@@ -8,16 +8,19 @@ type ModifiersKey = keyof Modifiers | undefined
 
 const modifiers: Modifiers = {
   famous: new Modifier({
-    id: 0,
-    name: 'Famous',
-    description: 'This person is well-known.',
+    id: -1,
+    name: 'Example',
+    description: 'Makes the target slightly ill',
     duration: 20,
     amount: 1,
     targets: ['Sentient'],
     criteria: '*',
-    falloffType: FalloffType.None,
+    falloffType: FalloffType.Linear,
     tags: [],
-    maxStacks: 1
+    maxStacks: 1,
+    impact: {
+      health: 1
+    }
   })
 }
 
@@ -32,6 +35,6 @@ export const getModifierById = (modifierId: number) => {
   if (key !== undefined) {
     return modifiers[key]
   } else {
-    return false
+    throw new RangeError(`Modifier ID ${modifierId} does not exist`)
   }
 }
