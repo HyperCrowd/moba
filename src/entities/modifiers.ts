@@ -7,12 +7,11 @@ type Modifiers = {
 type ModifiersKey = keyof Modifiers | undefined
 
 const modifiers: Modifiers = {
-  famous: new Modifier({
+  example: new Modifier({
     id: -1,
     name: 'Example',
     description: 'Makes the target slightly ill',
     duration: 20,
-    amount: 1,
     targets: ['Sentient'],
     criteria: '*',
     falloffType: FalloffType.Linear,

@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
+import { getTypeById, types } from '../../src/entities/hierarchy'
 
-// TODO complete this test
-test.skip('Entities.Hierarchy: Basic Test', () => {
-  expect(1).toBe(1)
+test('Entities.Hierarchy: Basic Test', () => {
+  const type = getTypeById(-1)
+  expect(type).toBe(types.Root)
 })

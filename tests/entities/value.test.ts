@@ -36,6 +36,8 @@ test('Entities.Value: Basic Test', () => {
   expect(value.getPercentage()).toBe(25)
   expect(value.isPercentDifferent(25)).toBe(true)
   expect(value.isPercentDifferent(-75)).toBe(true)
+
+  // TODO JSON test
 })
 
 // TODO complete this test

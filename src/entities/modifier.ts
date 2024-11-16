@@ -15,7 +15,6 @@ export class Modifier {
   description: string
   duration: number
   type: number
-  amount: number
   targets: string[]
   criteria: string
   falloffType: FalloffType
@@ -40,7 +39,6 @@ export class Modifier {
     this.type = options.type ?? 1 // HierarchyNode
     this.duration = options.duration ?? -1 // Infinite
     this.impact = options.impact ?? {}
-    this.amount = options.amount ?? 0
     this.targets = options.targets ?? []
     this.criteria = options.criteria ?? '*'
     this.falloffType = options.falloffType ?? 0 // None
@@ -72,12 +70,12 @@ export class Modifier {
   /**
    *
    */
-  hasTag (tags: string[]) {
+  hasTag (tags: string | string[]) {
     const wrappedTags = tags instanceof Array
       ? tags
       : [tags]
 
-    return wrappedTags.some(element => this.tags.includes(element))
+    return wrappedTags.some(tag => this.tags.includes(tag))
   }
 
   /**
