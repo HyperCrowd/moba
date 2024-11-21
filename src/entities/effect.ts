@@ -1,21 +1,21 @@
 import type { Struct, PublicMembers, NumericKeyPair } from '../types'
 import { type ModifierJSON, Modifier } from './modifier'
 import { getModifierById } from './modifiers'
-import type { ModifierAdjustments, ModifierImpact } from './types'
+import type { ModifierAdjustments, ModifierAdjustment, ModifierImpact } from './types'
 import { FalloffType } from './constants'
 
 export type EffectConfig = {
-  id: number
-  modifierId: number
-  duration: number
-  startsAt: number
-  endsAt: number
-  adjustments: NumericKeyPair,
-  targets: string[]
-  criteria: string[],
-  falloffType: number
-  tags: string[]
-  maxStacks: number
+  id?: number
+  modifierId?: number
+  startsAt?: number
+  duration?: number
+  endsAt?: number
+  adjustments?: NumericKeyPair,
+  targets?: string[]
+  criteria?: string[],
+  falloffType?: number
+  tags?: string[]
+  maxStacks?: number
 }
 
 export type EffectJSON = PublicMembers<EffectConfig>
@@ -62,7 +62,7 @@ export function getEffectConfig (startTime: number, modifierOrId: Modifier | num
       switch (replaceKey) {
         case 'duration':
           config.duration = replace.duration ?? config.duration
-          config.endsAt = config.startsAt + config.duration
+          config.endsAt = config.startsAt as number + config.duration
           break
         case 'targets':
           config.targets = [...(replace.targets ?? config.targets)]
@@ -89,7 +89,7 @@ export function getEffectConfig (startTime: number, modifierOrId: Modifier | num
       switch (addKey) {
         case 'duration':
           config.duration += add.duration ?? 0
-          config.endsAt = config.startsAt + config.duration
+          config.endsAt = config.startsAt as number + config.duration
           break
         case 'targets':
           (add.targets ?? config.targets).forEach(target => config.targets.push(target))
@@ -106,6 +106,10 @@ export function getEffectConfig (startTime: number, modifierOrId: Modifier | num
           config.maxStacks += add.maxStacks ?? 0
           break
         default:
+          if (config.adjustments[addKey] === undefined) {
+            config.adjustments[addKey] = 0
+          }
+
           config.adjustments[addKey] += add[addKey] as number
           break
       }
@@ -168,7 +172,7 @@ export const defaultAdjustment = {
 }
 
 export class Effect {
-  public readonly id?: number // TODO autogenerate?
+  public readonly id?: number
 
   // The modifier the effect applies
   public readonly modifierId: number
@@ -177,30 +181,33 @@ export class Effect {
   public readonly startsAt: number
 
   // The Current Degree the effect ends at
-  public readonly endsAt: number
+  public endsAt: number = 0
 
   // What adjustments are applied to the modifier before the effect makes an impact
-  public readonly adjustments: ModifierJSON
+  public adjustments: NumericKeyPair = {}
 
   // How long the effect lasts
-  public readonly duration?: number
+  public duration: number = 0
 
   // Who the effect targets
-  public readonly targets?: string[]
+  public targets: string[] = []
 
   // Criteria of targeting
-  public readonly criteria?: string[]
+  public criteria: string[] = []
 
   // Effect falloff shape
-  public readonly falloffType?: number
+  public falloffType: number = FalloffType.None
 
   // Additional effect tags
-  public readonly tags?: string[]
+  public tags: string[] = []
 
   // How many stacks of the effect can be applied
-  public readonly maxStacks?: number
+  public maxStacks: number = 1
 
-  constructor (config: EffectJSON) {
+  /**
+   * 
+   */
+  constructor (config: ModifierAdjustment) {
     if (config.startsAt === undefined) {
       throw new RangeError('startsAt must be defined when creating a new Effect')
     }
@@ -209,18 +216,48 @@ export class Effect {
       throw new RangeError('modifierId must be defined when creating a new Effect')
     }
 
-    const actualConfig = getEffectConfig(config.startsAt, config.modifierId, config.adjustments)
-    this.id = config.id
+    this.id = config.id //TODO autogenerate
     this.modifierId = config.modifierId
     this.startsAt = config.startsAt
-    this.endsAt = actualConfig.endsAt
-    this.adjustments = actualConfig.adjustments
-    this.targets = actualConfig.targets
-    this.duration = actualConfig.duration
-    this.criteria = actualConfig.criteria
-    this.falloffType = actualConfig.falloffType
-    this.tags = actualConfig.tags
-    this.maxStacks = actualConfig.maxStacks
+
+    this.adjust({ add: config })
+  }
+
+  /**
+   * 
+   * @param startTime 
+   * @param modifierOrId 
+   * @param adjustments 
+   */
+  adjust (adjustments: ModifierAdjustments = {}) {
+    const actualConfig = getEffectConfig(this.startsAt, this.modifierId, adjustments)
+    this.endsAt = actualConfig.endsAt ?? this.endsAt
+    this.adjustments = actualConfig.adjustments ?? this.adjustments
+    this.targets = actualConfig.targets ?? this.targets
+    this.duration = actualConfig.duration ?? this.duration
+    this.criteria = actualConfig.criteria ?? this.criteria
+    this.falloffType = actualConfig.falloffType ?? this.falloffType
+    this.tags = actualConfig.tags ?? this.tags
+    this.maxStacks = actualConfig.maxStacks ?? this.maxStacks
+  }
+
+  /**
+   * 
+   */
+  getConfig (): EffectConfig {
+    return {
+      id: this.id as number,
+      modifierId: this.modifierId,
+      startsAt: this.startsAt,
+      endsAt: this.endsAt,
+      adjustments: this.adjustments as NumericKeyPair,
+      duration: this.duration as number,
+      targets: this.targets as string[],
+      criteria: this.criteria as string[],
+      falloffType: this.falloffType as number,
+      tags: this.tags as string[],
+      maxStacks: this.maxStacks as number
+    }
   }
 
   /**
@@ -228,11 +265,10 @@ export class Effect {
    */
   toJSON (): Struct {
     return {
-      id: this.id,
+      id: this.id as number,
       modifierId: this.modifierId,
       startsAt: this.startsAt,
-      endsAt: this.endsAt,
-      adjustments: this.adjustments
+      adjustments: this.adjustments as NumericKeyPair
     }
   }
 

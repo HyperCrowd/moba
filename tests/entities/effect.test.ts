@@ -1,34 +1,37 @@
 import { expect, test } from 'vitest'
+import type { EffectConfig } from '../../src/entities/effect'
 import { Effect } from '../../src/entities/effect'
 import { FalloffType } from '../../src/entities/constants'
 
 test('Entities.Effect: Basic Test', () => {
-  const adjustments = {
+  const adjustments: EffectConfig = {
     duration: 3,
-    amount: 1,
     targets: ['N/A'],
     falloffType: FalloffType.Fast,
     maxStacks: 1,
-    tags: []
+    tags: [],
+    //fireDamage: 5
   }
 
   const effect = new Effect({
     id: 1,
     modifierId: -1,
     startsAt: 0,
-    endsAt: 10,
     adjustments
   })
 
   expect(effect.id).toBe(1)
   expect(effect.modifierId).toBe(-1)
   expect(effect.startsAt).toBe(0)
-  expect(effect.endsAt).toBe(10)
-  expect(effect.adjustments).toBe(adjustments)
+  expect(effect.endsAt).toBe(23)
+  expect(effect.adjustments).toStrictEqual({
+    fireDamage: 5
+  })
 
   // JSON
   const json = JSON.stringify(effect)
   const hydrated = new Effect(JSON.parse(json))
+  hydrated.adjust({ add: adjustments })
   expect(hydrated).toStrictEqual(effect)
 
   // Is Active

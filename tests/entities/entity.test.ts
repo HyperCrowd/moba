@@ -16,8 +16,7 @@ test('Entities.Entity: Basic Test', () => {
   const hydrated = new Entity(JSON.parse(json))
   expect(hydrated).toStrictEqual(entity)
 
-  const effect = entity.addEffect(-1, 0)
-  console.log(effect)
+  // const effect = entity.addEffect(-1, 0)
 
   // entity.isChildOfType()
   
