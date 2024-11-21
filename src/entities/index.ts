@@ -1,10 +1,11 @@
-import type { PublicMembers } from '../types'
+import type { PublicMembers, } from '../types'
+import type { ModifierAdjustments } from './types'
 
 import { isChildOfType } from './hierarchy/query'
 import { getModifierById } from './modifiers'
 import { EntityManager } from './entityManager'
 import { Effect } from './effect'
-import { Modifier, ModifierJSON } from './modifier'
+import { Modifier } from './modifier'
 
 export type EntityJSON = PublicMembers<Entity>
 
@@ -60,13 +61,8 @@ export class Entity {
   /**
    * Add an effect
    */
-  addEffect (modifierId: number, currentTime: number, adjustments: ModifierJSON): Effect | boolean {
+  addEffect (modifierId: number, currentTime: number, adjustments: ModifierAdjustments = {}): Effect | boolean {
     const modifier = getModifierById(modifierId)
-
-    if (modifier === false) {
-      // The modifier does not exist
-      return false
-    }
 
     const appliedEffects = this.effects.filter(effect => effect.modifierId === modifierId).length
 
@@ -86,7 +82,10 @@ export class Entity {
       modifierId,
       startsAt: currentTime,
       endsAt: currentTime + modifier.duration,
-      adjustments
+      adjustments: {
+        ...adjustments,
+        ...modifier.impact
+      }
     })
 
     this.effects.push(effect)

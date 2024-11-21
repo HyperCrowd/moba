@@ -4,6 +4,7 @@ import { FalloffType } from './constants'
 import { Entity } from './index'
 import { isChildOfType, getEntityType, query } from './hierarchy/query'
 
+
 // Define enum for falloff types
 
 export type ModifierJSON = Partial<PublicMembers<Modifier>>
@@ -142,12 +143,5 @@ export class Modifier {
    */
   getTargets (candidates: Entity[] | Modifier[]) {
     return query(candidates, [this])
-  }
-
-  /**
-   * TODO flesh this out
-   */
-  getEffect (time: number): number | false {
-    return 0 * time
   }
 }
