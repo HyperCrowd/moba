@@ -3,19 +3,17 @@ import type { NumericKeyPair } from '../types'
 export type ModifierImpact = NumericKeyPair | (() => NumericKeyPair)
 
 export type ModifierAdjustment = {
-  duration?: number,
+  duration?: number
+  falloffType?: number
+  maxStacks?: number
   targets?: string[]
   criteria?: string[]
-  falloffType?: number
   tags?: string[]
-  maxStacks?: number
-  endsAt?: number
-  modifierId?: number
-  [key: string]: number
+  [key: string]: number | string[] | undefined
 }
 
 export type ModifierAdjustments = {
-  add?: ModifierAdjustment,
-  remove?: ModifierAdjustment,
+  add?: ModifierAdjustment
+  remove?: ModifierAdjustment
   replace?: ModifierAdjustment
 }

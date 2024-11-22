@@ -1,8 +1,8 @@
 import type { Struct, PublicMembers, NumericKeyPair } from '../types'
-import { type ModifierJSON, Modifier } from './modifier'
 import { getModifierById } from './modifiers'
-import type { ModifierAdjustments, ModifierAdjustment, ModifierImpact } from './types'
+import type { ModifierAdjustments } from './types'
 import { FalloffType } from './constants'
+import { mergeUniqueArrays } from '../utils/uniqueArray'
 
 export type EffectConfig = {
   id?: number
@@ -10,7 +10,7 @@ export type EffectConfig = {
   startsAt?: number
   duration?: number
   endsAt?: number
-  adjustments?: NumericKeyPair,
+  impact?: NumericKeyPair,
   targets?: string[]
   criteria?: string[],
   falloffType?: number
@@ -18,158 +18,7 @@ export type EffectConfig = {
   maxStacks?: number
 }
 
-export type EffectJSON = PublicMembers<EffectConfig>
-
-/**
- * 
- */
-function populateEffectConfig (startTime: number, modifierOrId: Modifier | number): EffectConfig {
-  const modifier = modifierOrId instanceof Modifier
-  ? modifierOrId
-  : getModifierById(modifierOrId)
-
-  return {
-    id: 0, // TODO id generator
-    modifierId: modifier.id,
-    startsAt: startTime,
-    endsAt: startTime + modifier.duration,
-    adjustments: {} as NumericKeyPair,
-    duration: modifier.duration,
-    targets: [ ...modifier.targets],
-    criteria: [modifier.criteria],
-    falloffType: modifier.falloffType,
-    tags: [...modifier.tags],
-    maxStacks: modifier.maxStacks
-  }
-}
-
-/**
- * 
- */
-export function getEffectConfig (startTime: number, modifierOrId: Modifier | number, adjustments: ModifierAdjustments = {}): EffectConfig {
-  const config = populateEffectConfig(startTime, modifierOrId)
-
-  const replace = adjustments.replace || {}
-  const add = adjustments.add || {}
-  const remove = adjustments.remove || {}
-
-  const replaceKeys = Object.keys(adjustments.replace || {})
-  const addKeys = Object.keys(adjustments.add || {})
-  const removeKeys = Object.keys(adjustments.remove || {})
-
-  if (replace.length > 0) {
-    for (const replaceKey of replaceKeys) {
-      switch (replaceKey) {
-        case 'duration':
-          config.duration = replace.duration ?? config.duration
-          config.endsAt = config.startsAt as number + config.duration
-          break
-        case 'targets':
-          config.targets = [...(replace.targets ?? config.targets)]
-          break
-        case 'criteria':
-          config.criteria = [...(replace.criteria ?? config.criteria)]
-          break
-        case 'falloffType':
-          config.falloffType = replace.falloffType ?? config.falloffType
-          break
-        case 'tags':
-          config.tags = [...(replace.tags ?? config.tags)]
-          break
-        case 'maxStacks':
-          config.maxStacks = replace.maxStacks ?? config.maxStacks
-          break
-        default:
-          config.adjustments[replaceKey] = replace[replaceKey] as number
-          break
-      }
-    }
-  } else {
-    for (const addKey of addKeys) {
-      switch (addKey) {
-        case 'duration':
-          config.duration += add.duration ?? 0
-          config.endsAt = config.startsAt as number + config.duration
-          break
-        case 'targets':
-          (add.targets ?? config.targets).forEach(target => config.targets.push(target))
-          break
-        case 'criteria':
-          (add.criteria ?? config.criteria).forEach(criteria => config.criteria.push(criteria))
-          break
-        case 'falloffType':
-          break
-        case 'tags':
-          (add.tags ?? config.tags).forEach(tag => config.tags.push(tag))
-          break
-        case 'maxStacks':
-          config.maxStacks += add.maxStacks ?? 0
-          break
-        default:
-          if (config.adjustments[addKey] === undefined) {
-            config.adjustments[addKey] = 0
-          }
-
-          config.adjustments[addKey] += add[addKey] as number
-          break
-      }
-    }
-
-    for (const removeKey of removeKeys) {
-      switch (removeKey) {
-        case 'duration':
-          break
-        case 'targets':
-          for (const target of remove.targets || []) {
-            const index = config.targets.indexOf(target)
-
-            if (index > -1) {
-              config.targets = config.targets.splice(index, 1)
-            }
-          }
-          break
-        case 'criteria':
-          for (const criteria of remove.criteria || []) {
-            const index = config.criteria.indexOf(criteria)
-
-            if (index > -1) {
-              config.criteria = config.criteria.splice(index, 1)
-            }
-          }
-          break
-        case 'falloffType':
-          config.falloffType = FalloffType.None
-          break
-        case 'tags':
-          for (const tag of remove.tags || []) {
-            const index = config.tags.indexOf(tag)
-
-            if (index > -1) {
-              config.tags = config.tags.splice(index, 1)
-            }
-          }  
-          break
-        case 'maxStacks':
-          break
-        default:
-          delete config.adjustments[removeKey]
-          break
-      }
-    }
-  }
-
-  return config
-}
-
-
-export const defaultAdjustment = {
-  duration: 0,
-  amount: 0,
-  target: 0,
-  falloffType: 0,
-  maxStacks: 0,
-  tags: []
-}
+export type EffectJSON = PublicMembers<Effect>
 
 export class Effect {
   public readonly id?: number
@@ -184,7 +33,7 @@ export class Effect {
   public endsAt: number = 0
 
   // What adjustments are applied to the modifier before the effect makes an impact
-  public adjustments: NumericKeyPair = {}
+  public impact: NumericKeyPair
 
   // How long the effect lasts
   public duration: number = 0
@@ -207,7 +56,7 @@ export class Effect {
   /**
    * 
    */
-  constructor (config: ModifierAdjustment) {
+  constructor (config: EffectJSON) {
     if (config.startsAt === undefined) {
       throw new RangeError('startsAt must be defined when creating a new Effect')
     }
@@ -220,44 +69,152 @@ export class Effect {
     this.modifierId = config.modifierId
     this.startsAt = config.startsAt
 
-    this.adjust({ add: config })
+    const modifier = getModifierById(this.modifierId)
+
+    this.duration = config.duration ?? modifier.duration ?? this.duration
+    this.endsAt = config.endsAt ?? (this.startsAt + this.duration)
+    this.targets = config.targets ?? modifier.targets ?? this.targets
+    this.falloffType = config.falloffType ?? modifier.falloffType ?? this.falloffType
+    this.maxStacks = config.maxStacks ?? modifier.maxStacks ?? this.maxStacks
+
+    this.impact = {
+      ...config.impact,
+      ...modifier.impact
+    }
+
+    this.criteria = mergeUniqueArrays((config.criteria ?? []), modifier.criteria)
+    this.tags = mergeUniqueArrays((config.tags ?? []), modifier.tags)
   }
 
   /**
    * 
-   * @param startTime 
-   * @param modifierOrId 
-   * @param adjustments 
    */
   adjust (adjustments: ModifierAdjustments = {}) {
-    const actualConfig = getEffectConfig(this.startsAt, this.modifierId, adjustments)
-    this.endsAt = actualConfig.endsAt ?? this.endsAt
-    this.adjustments = actualConfig.adjustments ?? this.adjustments
-    this.targets = actualConfig.targets ?? this.targets
-    this.duration = actualConfig.duration ?? this.duration
-    this.criteria = actualConfig.criteria ?? this.criteria
-    this.falloffType = actualConfig.falloffType ?? this.falloffType
-    this.tags = actualConfig.tags ?? this.tags
-    this.maxStacks = actualConfig.maxStacks ?? this.maxStacks
-  }
+    const modifier = getModifierById(this.modifierId)
+    const impact: NumericKeyPair = { ...this.impact }
+    const replace = adjustments.replace || {}
+    const add = adjustments.add || {}
+    const remove = adjustments.remove || {} 
+    const replaceKeys = Object.keys(adjustments.replace || {})
+    const addKeys = Object.keys(adjustments.add || {})
+    const removeKeys = Object.keys(adjustments.remove || {})
 
-  /**
-   * 
-   */
-  getConfig (): EffectConfig {
-    return {
-      id: this.id as number,
-      modifierId: this.modifierId,
-      startsAt: this.startsAt,
-      endsAt: this.endsAt,
-      adjustments: this.adjustments as NumericKeyPair,
-      duration: this.duration as number,
-      targets: this.targets as string[],
-      criteria: this.criteria as string[],
-      falloffType: this.falloffType as number,
-      tags: this.tags as string[],
-      maxStacks: this.maxStacks as number
+    let endsAt = this.startsAt + modifier.duration
+    let duration = modifier.duration
+    let targets = [ ...modifier.targets]
+    let criteria = [...modifier.criteria]
+    let falloffType = modifier.falloffType
+    let tags = [...modifier.tags]
+    let maxStacks = modifier.maxStacks
+  
+
+    for (const replaceKey of replaceKeys) {
+      switch (replaceKey) {
+        case 'duration':
+          duration = replace.duration ?? duration
+          endsAt = this.startsAt + duration
+          break
+        case 'targets':
+          targets = [...(replace.targets ?? targets)]
+          break
+        case 'criteria':
+          criteria = [...(replace.criteria ?? criteria)]
+          break
+        case 'falloffType':
+          falloffType = replace.falloffType ?? falloffType
+          break
+        case 'tags':
+          tags = [...(replace.tags ?? tags)]
+          break
+        case 'maxStacks':
+          maxStacks = replace.maxStacks ?? maxStacks
+          break
+        default:
+          impact[replaceKey] = replace[replaceKey] as number
+          break
+      }
     }
+
+    for (const addKey of addKeys) {
+      switch (addKey) {
+        case 'duration':
+          duration += add.duration ?? 0
+          endsAt = this.startsAt + duration
+          break
+        case 'targets':
+          targets = mergeUniqueArrays(add.targets ?? [], targets)
+          break
+        case 'criteria':
+          criteria = mergeUniqueArrays(add.criteria ?? [], targets)
+          break
+        case 'falloffType':
+          break
+        case 'tags':
+          tags = mergeUniqueArrays(add.tags ?? [], targets)
+          break
+        case 'maxStacks':
+          maxStacks += add.maxStacks ?? 0
+          break
+        default:
+          if (impact[addKey] === undefined) {
+            impact[addKey] = 0
+          }
+
+          impact[addKey] += add[addKey] as number
+          break
+      }
+    }
+
+    for (const removeKey of removeKeys) {
+      switch (removeKey) {
+        case 'duration':
+          break
+        case 'targets':
+          for (const target of remove.targets || []) {
+            const index = targets.indexOf(target)
+
+            if (index > -1) {
+              targets = targets.splice(index, 1)
+            }
+          }
+          break
+        case 'criteria':
+          for (const query of remove.criteria || []) {
+            const index = criteria.indexOf(query)
+
+            if (index > -1) {
+              criteria = criteria.splice(index, 1)
+            }
+          }
+          break
+        case 'falloffType':
+          falloffType = FalloffType.None
+          break
+        case 'tags':
+          for (const tag of remove.tags || []) {
+            const index = tags.indexOf(tag)
+
+            if (index > -1) {
+              tags = tags.splice(index, 1)
+            }
+          }  
+          break
+        case 'maxStacks':
+          break
+        default:
+          delete impact[removeKey]
+          break
+      }
+    }
+  
+    this.endsAt = endsAt
+    this.impact = impact
+    this.targets = targets
+    this.duration = duration
+    this.criteria = criteria
+    this.falloffType = falloffType
+    this.tags = tags
+    this.maxStacks = maxStacks
   }
 
   /**
@@ -265,10 +222,17 @@ export class Effect {
    */
   toJSON (): Struct {
     return {
-      id: this.id as number,
+      id: this.id,
       modifierId: this.modifierId,
       startsAt: this.startsAt,
-      adjustments: this.adjustments as NumericKeyPair
+      impact: this.impact,
+      endsAt: this.endsAt,
+      duration: this.duration,
+      targets: this.targets,
+      criteria: this.criteria,
+      falloffType: this.falloffType,
+      tags: this.tags,
+      maxStacks: this.maxStacks
     }
   }
 
@@ -305,21 +269,11 @@ export class Effect {
     const modifier = getModifierById(this.modifierId)
 
     const falloffFactor = modifier.getFalloffFactor(currentTime, this.startsAt, this.endsAt)
-
-    const impact: ModifierImpact = { ...modifier.impact }
     const result: NumericKeyPair = {}
 
-    for (const key of Object.keys(impact)) {
-
-      const target = key as keyof ModifierJSON
-      let value = impact[target]
-
-      if (this.adjustments[target] !== undefined) {
-        value += this.adjustments[target] as number
-      }
-
+    for (const key of Object.keys(this.impact)) {
+      let value = this.impact[key]
       value *= falloffFactor
-
       result[key] = value
     }
 

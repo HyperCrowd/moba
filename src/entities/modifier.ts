@@ -17,7 +17,7 @@ export class Modifier {
   duration: number
   type: number
   targets: string[]
-  criteria: string
+  criteria: string[]
   falloffType: FalloffType
   impact: ModifierImpact
   tags: string[]
@@ -41,7 +41,7 @@ export class Modifier {
     this.duration = options.duration ?? -1 // Infinite
     this.impact = options.impact ?? {}
     this.targets = options.targets ?? []
-    this.criteria = options.criteria ?? '*'
+    this.criteria = options.criteria ?? ['*']
     this.falloffType = options.falloffType ?? 0 // None
     this.tags = options.tags ?? []
     this.maxStacks = options.maxStacks ?? 1

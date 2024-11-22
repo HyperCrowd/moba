@@ -1,51 +1,71 @@
 import { expect, test } from 'vitest'
-import type { EffectConfig } from '../../src/entities/effect'
+import type { ModifierAdjustments } from '../../src/entities/types'
 import { Effect } from '../../src/entities/effect'
-import { FalloffType } from '../../src/entities/constants'
 
 test('Entities.Effect: Basic Test', () => {
-  const adjustments: EffectConfig = {
-    duration: 3,
-    targets: ['N/A'],
-    falloffType: FalloffType.Fast,
-    maxStacks: 1,
-    tags: [],
-    //fireDamage: 5
-  }
-
   const effect = new Effect({
     id: 1,
     modifierId: -1,
     startsAt: 0,
-    adjustments
+    tags: ['Test'],
+    impact: {
+      fireDamage: 5
+    }
   })
 
   expect(effect.id).toBe(1)
   expect(effect.modifierId).toBe(-1)
   expect(effect.startsAt).toBe(0)
-  expect(effect.endsAt).toBe(23)
-  expect(effect.adjustments).toStrictEqual({
-    fireDamage: 5
+  expect(effect.endsAt).toBe(20)
+  expect(effect.impact).toStrictEqual({
+    fireDamage: 5,
+    health: 1
   })
 
   // JSON
   const json = JSON.stringify(effect)
   const hydrated = new Effect(JSON.parse(json))
-  hydrated.adjust({ add: adjustments })
   expect(hydrated).toStrictEqual(effect)
 
+  const adjustments: ModifierAdjustments = {
+    add: {
+      duration: 80,
+      maxStacks: 3,
+      fireDamage: -2,
+      criteria: ['TestQuery']
+    },
+    remove: {
+      tags: ['Test'],
+      falloffType: 0
+    },
+    replace: {
+      targets: ['Player']
+    }
+  }
+
+  hydrated.adjust(adjustments)
+  expect(hydrated.id).toBe(1)
+  expect(hydrated.modifierId).toBe(-1)
+  expect(hydrated.startsAt).toBe(0)
+  expect(hydrated.endsAt).toBe(100)
+  expect(hydrated.impact).toStrictEqual({
+    fireDamage: 3,
+    health: 1
+  })
+  
+
   // Is Active
-  expect(effect.isActive(9)).toBe(true)
-  expect(effect.isActive(10)).toBe(false)
+  expect(hydrated.isActive(9)).toBe(true)
+  expect(hydrated.isActive(100)).toBe(false)
 
   // Modifier
   const modifier = effect.getModifier()
   expect(modifier.id).toBe(effect.modifierId)
 
   // Impact over time
-  expect(effect.getImpact(0).health).toBe(1)
-  expect(effect.getImpact(5).health).toBe(0.5)
-  expect(effect.getImpact(9).health).toBe(0.09999999999999998)
-  expect(effect.getImpact(10).health).toBe(0)
-  expect(effect.getImpact(20).health).toBe(-1)
+  expect(hydrated.getImpact(0).health).toBe(1)
+  expect(hydrated.getImpact(50).health).toBe(0.5)
+  expect(hydrated.getImpact(99).health).toBe(0.010000000000000009)
+  expect(hydrated.getImpact(100).health).toBe(0)
+  expect(hydrated.getImpact(-100).health).toBe(2)
 })

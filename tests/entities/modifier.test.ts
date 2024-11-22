@@ -9,7 +9,7 @@ test('Entities.Modifier: Basic Test', () => {
     description: 'Makes the target slightly ill',
     duration: 20,
     targets: ['Sentient'],
-    criteria: '*',
+    criteria: ['*'],
     type: 1,
     falloffType: FalloffType.Linear,
     tags: ['test'],
@@ -24,7 +24,7 @@ test('Entities.Modifier: Basic Test', () => {
   expect(modifier.description).toBe('Makes the target slightly ill')
   expect(modifier.duration).toBe(20)
   expect(modifier.targets[0]).toBe('Sentient')
-  expect(modifier.criteria).toBe('*')
+  expect(modifier.criteria[0]).toBe('*')
   expect(modifier.falloffType).toBe(FalloffType.Linear)
   expect(modifier.tags.length).toBe(1)
   expect(modifier.maxStacks).toBe(1)
@@ -33,7 +33,7 @@ test('Entities.Modifier: Basic Test', () => {
   })
 
   const json = JSON.stringify(modifier)
-  expect(json).toBe(`{"id":-1,"name":"Example","description":"Makes the target slightly ill","duration":20,"type":1,"impact":{"health":1},"targets":["Sentient"],"criteria":"*","falloffType":1,"tags":["test"],"maxStacks":1}`)
+  expect(json).toBe(`{"id":-1,"name":"Example","description":"Makes the target slightly ill","duration":20,"type":1,"impact":{"health":1},"targets":["Sentient"],"criteria":["*"],"falloffType":1,"tags":["test"],"maxStacks":1}`)
   
   const hydrated = new Modifier(JSON.parse(json))
   expect(hydrated).toStrictEqual(modifier)

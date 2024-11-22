@@ -1,3 +1,20 @@
+/**
+ * 
+ */
+export function mergeUniqueArrays<T>(arr1: T[], arr2: T[]): T[] {
+  const uniqueElements = new Set<T>();
+
+  // Add all elements from both arrays to the Set
+  arr1.forEach(item => uniqueElements.add(item));
+  arr2.forEach(item => uniqueElements.add(item));
+
+  // Convert the Set back to an array
+  return Array.from(uniqueElements);
+}
+
+/**
+ * 
+ */
 export class UniqueArray<T> {
   protected list: T[]
 

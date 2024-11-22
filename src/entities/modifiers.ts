@@ -13,7 +13,7 @@ const modifiers: Modifiers = {
     description: 'Makes the target slightly ill',
     duration: 20,
     targets: ['Sentient'],
-    criteria: '*',
+    criteria: ['*'],
     falloffType: FalloffType.Linear,
     tags: [],
     maxStacks: 1,
