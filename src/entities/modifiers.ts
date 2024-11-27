@@ -1,11 +1,12 @@
-import { Modifier } from './modifier'
 import { FalloffType } from './constants'
+import { Modifier } from './modifier'
 
 type Modifiers = {
   [key: string]: Modifier
 }
-type ModifiersKey = keyof Modifiers | undefined
 
+type ModifiersKey = keyof Modifiers | undefined
+console.trace('here')
 const modifiers: Modifiers = {
   example: new Modifier({
     id: -1,

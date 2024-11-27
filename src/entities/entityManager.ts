@@ -1,7 +1,8 @@
 import type { EntityJSON } from './index'
+import { UniqueArray } from '../utils/uniqueArray'
 import { Entity } from './index'
 import { query } from './hierarchy/query'
-import { UniqueArray } from '../utils/uniqueArray'
+
 
 export class EntityManager extends UniqueArray<Entity> {
   /**

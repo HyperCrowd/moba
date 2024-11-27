@@ -1,8 +1,8 @@
 import type { Struct, PublicMembers, NumericKeyPair } from '../types'
-import { getModifierById } from './modifiers'
 import type { ModifierAdjustments } from './types'
-import { FalloffType } from './constants'
 import { mergeUniqueArrays } from '../utils/uniqueArray'
+import { FalloffType } from './constants'
+import { getModifierById } from './modifiers'
 
 export type EffectConfig = {
   id?: number

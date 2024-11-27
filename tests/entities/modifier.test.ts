@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
-import { Modifier } from './../../src/entities/modifier'
 import { FalloffType } from '../../src/entities/constants'
+import { Modifier } from './../../src/entities/modifier'
 
-test('Entities.Modifier: Basic Test', () => {
+test.only('Entities.Modifier: Basic Test', () => {
   const modifier = new Modifier({
     id: -1,
     name: 'Example',

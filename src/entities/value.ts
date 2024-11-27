@@ -1,5 +1,4 @@
 import type { Struct, PublicMembers } from '../types'
-import { Modifier } from './modifier'
 
 export type ValueJSON = PublicMembers<Value>
 
@@ -10,8 +9,8 @@ export class Value {
 
   constructor(config: ValueJSON) {
     this._amount = config.amount ?? 0
-    this._minimum = config.minimum ?? 100
-    this._maximum = config.maximum ?? -100
+    this._minimum = config.minimum ?? -100
+    this._maximum = config.maximum ?? 100
     this.validateAmount()
   }
 
@@ -80,25 +79,6 @@ export class Value {
   set maximum(value: number) {
     this._maximum = value
     this.validateAmount()
-  }
-
-  /**
-   *
-   */
-  getValue (time: number, modifiers: Modifier[]): number {
-    let total = 0
-
-    for (const modifier of modifiers) {
-      const modValue = modifier.getEffect(time)
-
-      if (modValue !== false) {
-        total += modValue
-      }
-    }
-
-    const result = this._amount + total
-
-    return result
   }
 
   /**

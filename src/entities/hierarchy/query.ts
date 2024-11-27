@@ -1,23 +1,19 @@
-import { Entity } from '../index'
-import { Modifier } from '../modifier'
+import type { Modifier } from '../modifier'
+import type { Effect } from '../effect'
+import type { Entity } from '../index'
 import { HierarchyNode } from './node'
 import { hierarchy, getTypeById } from './index'
-import { Effect } from '../effect'
 import { getModifierById } from '../modifiers'
 
 type CriteriaCheck = (candidates: Entity | Modifier) => boolean
 
-const percentRegex = /\.[A-Za-z_]+\s*===\s*([0-9]+\.?[0-9]*)%/g
+const percentRegex = /\.[A-Za-z_]+\s *(=|<=|<|>|>=)\s*([0-9]+\.?[0-9]*)%/g
 const andRegex = / AND /g
 const orRegex = / OR /g
 const notEqualRegex = /!=/g
-const equalRegex = /=/g
-const lesserThanOrEqualRegex = /<=/g
-const lesserThanRegex = /</g
-const greaterThanOrEqualRegex = />=/g
-const greaterThanRegex = />/g
+const equalRegex = /(?<![<>])=[^>]/g
 const tagsRegex = /tags *= *(["'][^"']+["'])/g
-const propertyRegex = /([A-Za-z_]+)/g
+const compareRegex = /([A-Za-z_]+) *(=|!=|<=|<|>|>=) *([0-9.]+)/g
 const hierarchyCache: Record<string, HierarchyNode[]> = {}
 const criteriaCache: Record<string, CriteriaCheck> = {}
 
@@ -69,20 +65,17 @@ export const getCriteriaFilters = (conditions: string | string[]): CriteriaCheck
         ? 'true'
         : condition || 'true'
 
+      // TODO determine how best to bring in the applied effects to these stats
       const code = criteria === 'true'
         ? 'return true'
         : 'return ' + criteria
-          .replace(tagsRegex, 'entity.tags.indexOf($1) > -1')
+          .replace(tagsRegex, '[$1].some(element => entity.tags.includes(element))')
+          .replace(compareRegex, 'entity.stats.$1?.amount $2  $3')
+          .replace(percentRegex, '.isPercentDifference($1)')
           .replace(equalRegex, '===')
           .replace(notEqualRegex, '!==')
           .replace(andRegex, ' && ' )
           .replace(orRegex, ' || ' )
-          .replace(propertyRegex, 'entity.$1.amount')
-          .replace(percentRegex, '.isPercentDifference($1)')
-          .replace(lesserThanOrEqualRegex, '<=')
-          .replace(greaterThanOrEqualRegex, '>=')
-          .replace(lesserThanRegex, '<')
-          .replace(greaterThanRegex, '>')
 
       const newFunc = new Function('entity', code) as CriteriaCheck
 
@@ -104,6 +97,7 @@ export const query = (candidates: Entity[] | Modifier[], modifiers: Array<Effect
   const results: (Entity | Modifier)[] = []
 
   for (const modifier of modifiers) {
+    // TODO figure out why including getModifierById here causes modifier tests to fail
     const source = typeof modifier === 'number'
       ? getModifierById(modifier)
       : modifier

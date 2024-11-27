@@ -1,15 +1,11 @@
 import type { Struct, PublicMembers } from '../types'
 import type { ModifierImpact } from './types'
+import type { Entity } from './index'
 import { FalloffType } from './constants'
-import { Entity } from './index'
 import { isChildOfType, getEntityType, query } from './hierarchy/query'
-
-
-// Define enum for falloff types
 
 export type ModifierJSON = Partial<PublicMembers<Modifier>>
 
-// Define interface for Modifiers
 export class Modifier {
   id: number
   name: string

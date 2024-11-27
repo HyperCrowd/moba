@@ -1,9 +1,9 @@
-import type { PublicMembers, } from '../types'
+import type { PublicMembers, NumericKeyPair } from '../types'
 import type { ModifierAdjustments } from './types'
-
-import { isChildOfType } from './hierarchy/query'
+import { Value } from './value'
 import { EntityManager } from './entityManager'
 import { Effect } from './effect'
+import { isChildOfType } from './hierarchy/query'
 
 export type EntityJSON = PublicMembers<Entity>
 
@@ -23,6 +23,9 @@ export class Entity {
   // Active effects on the entity
   effects: Effect[]
 
+  // The stats of the entity
+  stats: Record<string, Value>
+
   // What entities the Entity is focused on
   focus: EntityManager
 
@@ -39,6 +42,7 @@ export class Entity {
     this.name = config.name ?? 'Please provide a name'
     this.tags = config.tags || []
     this.effects = config.effects || []
+    this.stats = config.stats || {}
     this.focus = focus
   }
 
@@ -138,5 +142,13 @@ export class Entity {
    */
   filterFocus (targets: string[], criteria: string) {
     this.focus.find(targets, criteria)
+  }
+
+  /**
+   * 
+   */
+  getStats (currentTime: number): NumericKeyPair {
+    // TODO complete getStats
+    return {}
   }
 }

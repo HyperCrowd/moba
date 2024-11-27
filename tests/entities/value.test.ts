@@ -39,12 +39,3 @@ test('Entities.Value: Basic Test', () => {
 
   // TODO JSON test
 })
-
-// TODO complete this test
-test('Entities.Value: Modifier Test', () => {
-  // const value = new Value({
-  //   amount: 50,
-  //   minimum: 0,
-  //   maximum: 100
-  // })
-})
