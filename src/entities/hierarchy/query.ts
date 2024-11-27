@@ -55,29 +55,39 @@ export const isChildOfType = (child: HierarchyNode | number, type: HierarchyNode
 /**
  *
  */
-export const getCriteriaFilter = (conditions: string) => {
-  if (criteriaCache[conditions] === undefined) {
-    // Cache criteria
-    const criteria = conditions === '*'
-      ? 'true'
-      : conditions || 'true'
+export const getCriteriaFilters = (conditions: string | string[]): CriteriaCheck[] => {
+  const normalizedConditions = conditions instanceof Array
+    ? conditions
+    : [conditions]
+  const result: CriteriaCheck[] = []
 
-    const code = criteria === 'true'
-      ? 'return true'
-      : 'return ' + criteria
-        .replace(tagsRegex, 'entity.tags.indexOf($1) > -1')
-        .replace(equalRegex, '===')
-        .replace(notEqualRegex, '!==')
-        .replace(andRegex, ' && ' )
-        .replace(orRegex, ' || ' )
-        .replace(propertyRegex, 'entity.$1.amount')
-        .replace(percentRegex, '.isPercentDifference($1)')
+  for (const condition of normalizedConditions) {
 
-    const newFunc = new Function('entity', code) as CriteriaCheck
-    criteriaCache[conditions] = newFunc
+    if (criteriaCache[condition] === undefined) {
+      // Cache criteria
+      const criteria = condition === '*'
+        ? 'true'
+        : condition || 'true'
+
+      const code = criteria === 'true'
+        ? 'return true'
+        : 'return ' + criteria
+          .replace(tagsRegex, 'entity.tags.indexOf($1) > -1')
+          .replace(equalRegex, '===')
+          .replace(notEqualRegex, '!==')
+          .replace(andRegex, ' && ' )
+          .replace(orRegex, ' || ' )
+          .replace(propertyRegex, 'entity.$1.amount')
+          .replace(percentRegex, '.isPercentDifference($1)')
+
+      const newFunc = new Function('entity', code) as CriteriaCheck
+      criteriaCache[condition] = newFunc
+    }
+
+    result.push(criteriaCache[condition])
   }
 
-  return criteriaCache[conditions]
+  return result
 }
 
 /**
@@ -89,15 +99,20 @@ export const query = (candidates: Entity[] | Modifier[], modifiers: QueryCriteri
   const results: (Entity | Modifier)[] = []
 
   for (const modifier of modifiers) {
-    criterias.push(getCriteriaFilter(modifier.criteria))
+    // Get all filters for the modifier
+    getCriteriaFilters(modifier.criteria).forEach(criteria => criterias.push(criteria))
 
     for (const target of modifier.targets) {
-      // Get hierarchy targets
+      // Get hierarchy targets from the modifier
       getEntityType(target).forEach(hierarchyNode => hierarchy.push(hierarchyNode))
     }
   }
 
   for (const candidate of candidates) {
+    if (results.indexOf(candidate) > -1) {
+      continue
+    }
+
     const found = hierarchy.find(hierarchyNode => hierarchyNode.id === candidate.type)
 
     if (found !== undefined) {
