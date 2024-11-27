@@ -1,24 +1,25 @@
-import type { Entity } from '../index'
-import type { Modifier } from '../modifier'
+import { Entity } from '../index'
+import { Modifier } from '../modifier'
 import { HierarchyNode } from './node'
 import { hierarchy, getTypeById } from './index'
+import { Effect } from '../effect'
+import { getModifierById } from '../modifiers'
 
 type CriteriaCheck = (candidates: Entity | Modifier) => boolean
-type QueryCriteria = Modifier | {
-  targets: string[]
-  criteria: string
-}
 
 const percentRegex = /\.[A-Za-z_]+\s*===\s*([0-9]+\.?[0-9]*)%/g
 const andRegex = / AND /g
 const orRegex = / OR /g
 const notEqualRegex = /!=/g
 const equalRegex = /=/g
+const lesserThanOrEqualRegex = /<=/g
+const lesserThanRegex = /</g
+const greaterThanOrEqualRegex = />=/g
+const greaterThanRegex = />/g
 const tagsRegex = /tags *= *(["'][^"']+["'])/g
 const propertyRegex = /([A-Za-z_]+)/g
 const hierarchyCache: Record<string, HierarchyNode[]> = {}
 const criteriaCache: Record<string, CriteriaCheck> = {}
-
 
 /**
  * 
@@ -56,13 +57,12 @@ export const isChildOfType = (child: HierarchyNode | number, type: HierarchyNode
  *
  */
 export const getCriteriaFilters = (conditions: string | string[]): CriteriaCheck[] => {
+  const result: CriteriaCheck[] = []
   const normalizedConditions = conditions instanceof Array
     ? conditions
     : [conditions]
-  const result: CriteriaCheck[] = []
-
+  
   for (const condition of normalizedConditions) {
-
     if (criteriaCache[condition] === undefined) {
       // Cache criteria
       const criteria = condition === '*'
@@ -79,8 +79,13 @@ export const getCriteriaFilters = (conditions: string | string[]): CriteriaCheck
           .replace(orRegex, ' || ' )
           .replace(propertyRegex, 'entity.$1.amount')
           .replace(percentRegex, '.isPercentDifference($1)')
+          .replace(lesserThanOrEqualRegex, '<=')
+          .replace(greaterThanOrEqualRegex, '>=')
+          .replace(lesserThanRegex, '<')
+          .replace(greaterThanRegex, '>')
 
       const newFunc = new Function('entity', code) as CriteriaCheck
+
       criteriaCache[condition] = newFunc
     }
 
@@ -93,16 +98,20 @@ export const getCriteriaFilters = (conditions: string | string[]): CriteriaCheck
 /**
  *
  */
-export const query = (candidates: Entity[] | Modifier[], modifiers: QueryCriteria[]) => {
+export const query = (candidates: Entity[] | Modifier[], modifiers: Array<Effect | Modifier | number>) => {
   const hierarchy: HierarchyNode[] = []
   const criterias: CriteriaCheck[] = []
   const results: (Entity | Modifier)[] = []
 
   for (const modifier of modifiers) {
-    // Get all filters for the modifier
-    getCriteriaFilters(modifier.criteria).forEach(criteria => criterias.push(criteria))
+    const source = typeof modifier === 'number'
+      ? getModifierById(modifier)
+      : modifier
 
-    for (const target of modifier.targets) {
+    // Get all filters for the modifier
+    getCriteriaFilters(source.criteria).forEach(criteria => criterias.push(criteria))
+
+    for (const target of source.targets) {
       // Get hierarchy targets from the modifier
       getEntityType(target).forEach(hierarchyNode => hierarchy.push(hierarchyNode))
     }
@@ -113,7 +122,7 @@ export const query = (candidates: Entity[] | Modifier[], modifiers: QueryCriteri
       continue
     }
 
-    const found = hierarchy.find(hierarchyNode => hierarchyNode.id === candidate.type)
+    const found = hierarchy.length === 0 && hierarchy.find(hierarchyNode => hierarchyNode.id === candidate.type)
 
     if (found !== undefined) {
       // Candidate has a type of the targeted hierarchies
