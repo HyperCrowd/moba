@@ -49,16 +49,12 @@ test('Entities.Modifier: Basic Test', () => {
   expect(modifier.getFalloffFactor(5, 0, 10)).toBe(0.5)
   expect(modifier.getFalloffFactor(10, 0, 10)).toBe(0)
   
-  // TODO figure out entity
-  // modifier.getTargets()
+  expect(modifier.isChildOfType(-1)).toBe(true)
+  expect(modifier.isChildOfType(1)).toBe(false)
 
-  // TODO figure out getEffect
-  // modifier.getEffect()
-
-  // TODO fix entity
+  // TODO fix query
   // modifier.canTarget()
 
-  // TODO fix query first
-  // modifier.isChildOfType()
-
+  // TODO figure out query
+  // modifier.getTargets()
 })

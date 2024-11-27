@@ -2,10 +2,8 @@ import type { PublicMembers, } from '../types'
 import type { ModifierAdjustments } from './types'
 
 import { isChildOfType } from './hierarchy/query'
-import { getModifierById } from './modifiers'
 import { EntityManager } from './entityManager'
 import { Effect } from './effect'
-import { Modifier } from './modifier'
 
 export type EntityJSON = PublicMembers<Entity>
 
@@ -61,32 +59,25 @@ export class Entity {
   /**
    * Add an effect
    */
-  addEffect (modifierId: number, currentTime: number, adjustments: ModifierAdjustments = {}): Effect | boolean {
-    const modifier = getModifierById(modifierId)
+  addEffect (modifierId: number, currentTime: number, effectId?: number, adjustments: ModifierAdjustments = {}): Effect | boolean {
+    const effect = new Effect({
+      id: effectId,
+      modifierId,
+      startsAt: currentTime
+    })
+    effect.adjust(adjustments)
 
     const appliedEffects = this.effects.filter(effect => effect.modifierId === modifierId).length
 
-    if (appliedEffects >= (modifier.maxStacks + (adjustments.maxStacks || 0))) {
+    if (appliedEffects >= (effect.maxStacks)) {
       // The modifier has been applied enough times
       return false
     }
 
-    const duration = modifier.duration + (adjustments.duration ?? 0)
-
-    if (duration <= 0) {
-      // The duration is less than or equal to 0
+    if (effect.duration <= 0 || effect.endsAt <= currentTime) {
+      // The duration is invalid
       return false
     }
-
-    const effect = new Effect({
-      modifierId,
-      startsAt: currentTime,
-      endsAt: currentTime + modifier.duration,
-      adjustments: {
-        ...adjustments,
-        ...modifier.impact
-      }
-    })
 
     this.effects.push(effect)
 
@@ -103,6 +94,27 @@ export class Entity {
   /**
    *
    */
+  isEffectActive (effectId: number, currentTime: number) {
+    const effect = this.effects.find(effect => effectId === effect.id)
+
+    if (effect === undefined) {
+      return false
+    }
+
+    if (currentTime < effect.startsAt) {
+      return false
+    }
+
+    if (currentTime >= effect.endsAt) {
+      return false
+    }
+
+    return true
+  }
+
+/**
+ *
+ */
   addFocus (entity: Entity) {
     return this.focus.add(entity)
   }
@@ -126,42 +138,5 @@ export class Entity {
    */
   filterFocus (targets: string[], criteria: string) {
     this.focus.find(targets, criteria)
-  }
-
-  /**
-   *
-   */
-  addModifier (modifier: Modifier, modifiers: Modifier[]): Modifier[] {
-    const existingModifiers = modifiers.filter(element => element.id === modifier.id)
-
-    if (existingModifiers.length > 0 && existingModifiers.length + 1 > existingModifiers[0].maxStacks) {
-      // Do not add the modifier, it will exceed the maximum stacks
-      return modifiers
-    }
-
-    modifiers.push(modifier)
-
-    return modifiers
-  }
-
-  /**
-   *
-   */
-  isEffectActive (effectId: number, currentTime: number) {
-    const effect = this.effects.find(effect => effectId === effect.id)
-
-    if (effect === undefined) {
-      return false
-    }
-
-    if (currentTime < effect.startsAt) {
-      return false
-    }
-
-    if (currentTime >= effect.endsAt) {
-      return false
-    }
-
-    return true
   }
 }

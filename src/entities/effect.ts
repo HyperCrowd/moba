@@ -56,6 +56,25 @@ export class Effect {
   /**
    * 
    */
+  static copy (effect: Effect) {
+    return new Effect({
+      id: effect.id,
+      modifierId: effect.modifierId,
+      startsAt: effect.startsAt,
+      impact: effect.impact,
+      endsAt: effect.endsAt,
+      duration: effect.duration,
+      targets: effect.targets,
+      criteria: effect.criteria,
+      falloffType: effect.falloffType,
+      tags: effect.tags,
+      maxStacks: effect.maxStacks
+    })
+  }
+
+  /**
+   * 
+   */
   constructor (config: EffectJSON) {
     if (config.startsAt === undefined) {
       throw new RangeError('startsAt must be defined when creating a new Effect')
