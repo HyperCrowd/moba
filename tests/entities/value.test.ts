@@ -34,8 +34,9 @@ test('Entities.Value: Basic Test', () => {
   value.maximum = 200
   value.amount = 50
   expect(value.getPercentage()).toBe(25)
-  expect(value.isPercentDifferent(25)).toBe(true)
-  expect(value.isPercentDifferent(-75)).toBe(true)
 
-  // TODO JSON test
+  const json = JSON.stringify(value)
+  expect(json).toBe('{"minimum":0,"maximum":200,"amount":50}')
+  const hydrated = new Value(JSON.parse(json))
+  expect(hydrated).toStrictEqual(value)
 })

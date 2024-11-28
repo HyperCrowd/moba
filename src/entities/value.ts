@@ -9,7 +9,7 @@ export class Value {
 
   constructor(config: ValueJSON) {
     this._amount = config.amount ?? 0
-    this._minimum = config.minimum ?? -100
+    this._minimum = config.minimum ?? 0
     this._maximum = config.maximum ?? 100
     this.validateAmount()
   }
@@ -23,6 +23,17 @@ export class Value {
       maximum: this._maximum,
       amount: this._amount
     }
+  }
+
+  /**
+   * 
+   */
+  clone () {
+    return new Value({
+      amount: this._amount,
+      maximum: this._maximum,
+      minimum: this._minimum
+    })
   }
 
   /**
@@ -82,25 +93,9 @@ export class Value {
   }
 
   /**
-   * 
+   * Gets the percentage of the current value based on the minimum and maximum of the value
    */
   getPercentage (value: number = this._amount) {
     return ((value - this._minimum) / (this._maximum - this._minimum)) * 100;
   }
-
-  /**
-   * 
-   */
-  isPercentDifferent(percent: number, value: number = this._amount): boolean {
-    const range = this._maximum - this._minimum;
-    const decimal = percent / 100;
-
-    if (percent > 0) {
-        // Check if the amount is less than or equal to the value corresponding to the percentage of the range
-        return value <= this._minimum + range * decimal;
-    } else {
-        // Check if the amount is greater than or equal to the value corresponding to the negative percentage of the range
-        return value >= this._maximum - range * Math.abs(decimal);
-    }
-}
 }

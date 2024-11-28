@@ -19,6 +19,7 @@ import { startActions } from './events/action'
 import { EventType } from './events/events'
 import { loadMask } from './maps/masks'
 // import { createSmoke } from './visuals/shaders'
+import { defineModifiers } from './entities/modifiers'
 
 // Phaser cannot handle await/async in the preload/create process, so we preload custom assets here
 const assets: {
@@ -49,10 +50,12 @@ const CONFIG: Phaser.Types.Core.GameConfig = {
      * 
      */
     create: async function (this: Phaser.Scene): Promise<void> {
+      defineModifiers()
       const eventQueue = new EventQueue({ verbose: false })
       const { map } = createMap(this, eventQueue, )
       const { player, cursors } = createMovement(this, eventQueue)
       const { projectiles } = createProjectiles(this, eventQueue, player)
+      
 
       // TODO move to debug 
       // for (const coord of assets.boundaries) {

@@ -3,7 +3,6 @@ import { UniqueArray } from '../utils/uniqueArray'
 import { Entity } from './index'
 import { query } from './hierarchy/query'
 
-
 export class EntityManager extends UniqueArray<Entity> {
   /**
    *

@@ -1,8 +1,11 @@
-import { expect, test } from 'vitest'
 import type { ModifierAdjustments } from '../../src/entities/types'
+import { expect, test } from 'vitest'
 import { Effect } from '../../src/entities/effect'
+import { defineModifiers } from './../../src/entities/modifiers';
 
 test('Entities.Effect: Basic Test', () => {
+  defineModifiers()
+
   const effect = new Effect({
     id: 1,
     modifierId: -1,

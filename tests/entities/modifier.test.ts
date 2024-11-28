@@ -1,14 +1,18 @@
 import { expect, test } from 'vitest'
 import { FalloffType } from '../../src/entities/constants'
 import { Modifier } from './../../src/entities/modifier'
+import { defineModifiers } from '../../src/entities/modifiers'
+import { Entity } from '../../src/entities'
 
 test.only('Entities.Modifier: Basic Test', () => {
+  defineModifiers()
+
   const modifier = new Modifier({
     id: -1,
     name: 'Example',
     description: 'Makes the target slightly ill',
     duration: 20,
-    targets: ['Sentient'],
+    targets: ['Other'],
     criteria: ['*'],
     type: 1,
     falloffType: FalloffType.Linear,
@@ -23,7 +27,7 @@ test.only('Entities.Modifier: Basic Test', () => {
   expect(modifier.name).toBe('Example')
   expect(modifier.description).toBe('Makes the target slightly ill')
   expect(modifier.duration).toBe(20)
-  expect(modifier.targets[0]).toBe('Sentient')
+  expect(modifier.targets[0]).toBe('Other')
   expect(modifier.criteria[0]).toBe('*')
   expect(modifier.falloffType).toBe(FalloffType.Linear)
   expect(modifier.tags.length).toBe(1)
@@ -33,7 +37,7 @@ test.only('Entities.Modifier: Basic Test', () => {
   })
 
   const json = JSON.stringify(modifier)
-  expect(json).toBe(`{"id":-1,"name":"Example","description":"Makes the target slightly ill","duration":20,"type":1,"impact":{"health":1},"targets":["Sentient"],"criteria":["*"],"falloffType":1,"tags":["test"],"maxStacks":1}`)
+  expect(json).toBe(`{"id":-1,"name":"Example","description":"Makes the target slightly ill","duration":20,"type":1,"impact":{"health":1},"targets":["Other"],"criteria":["*"],"falloffType":1,"tags":["test"],"maxStacks":1}`)
   
   const hydrated = new Modifier(JSON.parse(json))
   expect(hydrated).toStrictEqual(modifier)
@@ -52,8 +56,18 @@ test.only('Entities.Modifier: Basic Test', () => {
   expect(modifier.isChildOfType(-1)).toBe(true)
   expect(modifier.isChildOfType(1)).toBe(false)
 
-  // TODO fix query
-  // modifier.canTarget()
+  const alice = new Entity({
+    name: 'Alice',
+    type: 3
+  })
+
+  const bob = new Entity({
+    name: 'Bob',
+    type: 2
+  })
+
+  expect(modifier.canTarget(alice)).toBe(true)
+  expect(modifier.canTarget(bob)).toBe(false)
 
   // TODO figure out query
   // modifier.getTargets()

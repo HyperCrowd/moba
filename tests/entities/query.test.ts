@@ -18,7 +18,9 @@ test('Query: Basic Test', () => {
     tags: ['leftHanded'],
     stats: {
       health: new Value({
-        amount: 6
+        amount: 6,
+        minimum: 0,
+        maximum: 12
       })
     }
   })
@@ -65,6 +67,10 @@ test('Query: Basic Test', () => {
   expect(healthFilter[0](alice)).toBe(false)
   expect(healthFilter[0](bob)).toBe(true)
 
+  const healthPercentFilter = getCriteriaFilters(['health = 50%'])
+  expect(healthPercentFilter[0](alice)).toBe(false)
+  expect(healthPercentFilter[0](bob)).toBe(true)
+  
 
   // Query
   // TODO have to fininsh entity.getStats

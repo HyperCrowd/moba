@@ -1,4 +1,4 @@
-import type { PublicMembers, NumericKeyPair } from '../types'
+import type { PublicMembers } from '../types'
 import type { ModifierAdjustments } from './types'
 import { Value } from './value'
 import { EntityManager } from './entityManager'
@@ -6,7 +6,7 @@ import { Effect } from './effect'
 import { isChildOfType } from './hierarchy/query'
 
 export type EntityJSON = PublicMembers<Entity>
-
+export type Stats = Record<string, Value>
 export class Entity {
   // Group ID
   id: number
@@ -24,7 +24,7 @@ export class Entity {
   effects: Effect[]
 
   // The stats of the entity
-  stats: Record<string, Value>
+  stats: Stats
 
   // What entities the Entity is focused on
   focus: EntityManager
@@ -147,8 +147,25 @@ export class Entity {
   /**
    * 
    */
-  getStats (currentTime: number): NumericKeyPair {
-    // TODO complete getStats
-    return {}
+  getStats (currentTime: number): Stats {
+    const result: Stats = {}
+
+    Object.keys(this.stats).forEach(key => result[key] = this.stats[key].clone())
+
+    for (const effect of this.effects) {
+      const impact = effect.getImpact(currentTime)
+
+      for (const key of Object.keys(impact)) {
+        if (result[key] === undefined) {
+          result[key] = new Value({
+            amount: 0
+          })
+        }
+
+        result[key].amount += impact[key]
+      }
+    }
+
+    return result
   }
 }

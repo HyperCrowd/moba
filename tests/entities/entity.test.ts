@@ -1,8 +1,11 @@
 import { expect, test } from 'vitest'
 import { Entity } from './../../src/entities/index'
 import { Effect } from '../../src/entities/effect'
+import { defineModifiers } from '../../src/entities/modifiers'
 
 test('Entities.Entity: Basic Test', () => {
+  defineModifiers()
+
   const entity = new Entity({
     id: 1,
     name: 'Test',

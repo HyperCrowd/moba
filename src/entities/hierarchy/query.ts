@@ -2,18 +2,18 @@ import type { Modifier } from '../modifier'
 import type { Effect } from '../effect'
 import type { Entity } from '../index'
 import { HierarchyNode } from './node'
-import { hierarchy, getTypeById } from './index'
 import { getModifierById } from '../modifiers'
+import { hierarchy, getTypeById } from './index'
 
 type CriteriaCheck = (candidates: Entity | Modifier) => boolean
 
-const percentRegex = /\.[A-Za-z_]+\s *(=|<=|<|>|>=)\s*([0-9]+\.?[0-9]*)%/g
+const compareRegex = /([A-Za-z_]+) *(=|!=|<=|<|>|>=) *([0-9.]+)/g
+const percentRegex = /([A-Za-z_]+) *(=|!=|<=|<|>|>=) *([0-9]+\.?[0-9])%/g
 const andRegex = / AND /g
 const orRegex = / OR /g
 const notEqualRegex = /!=/g
 const equalRegex = /(?<![<>])=[^>]/g
 const tagsRegex = /tags *= *(["'][^"']+["'])/g
-const compareRegex = /([A-Za-z_]+) *(=|!=|<=|<|>|>=) *([0-9.]+)/g
 const hierarchyCache: Record<string, HierarchyNode[]> = {}
 const criteriaCache: Record<string, CriteriaCheck> = {}
 
@@ -70,8 +70,8 @@ export const getCriteriaFilters = (conditions: string | string[]): CriteriaCheck
         ? 'return true'
         : 'return ' + criteria
           .replace(tagsRegex, '[$1].some(element => entity.tags.includes(element))')
-          .replace(compareRegex, 'entity.stats.$1?.amount $2  $3')
-          .replace(percentRegex, '.isPercentDifference($1)')
+          .replace(percentRegex, 'entity.stats.$1?.getPercentage() $2  $3') // TODO why is the rightmost character of $2 being destroyed?
+          .replace(compareRegex, 'entity.stats.$1?.amount $2  $3') // TODO why is the rightmost character of $2 being destroyed?
           .replace(equalRegex, '===')
           .replace(notEqualRegex, '!==')
           .replace(andRegex, ' && ' )
