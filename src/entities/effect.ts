@@ -11,11 +11,12 @@ export type EffectConfig = {
   duration?: number
   endsAt?: number
   impact?: NumericKeyPair,
-  targets?: string[]
   criteria?: string[],
   falloffType?: number
   tags?: string[]
   maxStacks?: number
+  rangeMin?: number
+  rangeMax?: number
 }
 
 export type EffectJSON = PublicMembers<Effect>
@@ -38,9 +39,6 @@ export class Effect {
   // How long the effect lasts
   public duration: number = 0
 
-  // Who the effect targets
-  public targets: string[] = []
-
   // Criteria of targeting
   public criteria: string[] = []
 
@@ -53,6 +51,12 @@ export class Effect {
   // How many stacks of the effect can be applied
   public maxStacks: number = 1
 
+  // How close the target of the effect has to be
+  public rangeMin: number = 0
+
+  // How far the target of the effect can be
+  public rangeMax: number = 10
+
   /**
    * 
    */
@@ -64,11 +68,12 @@ export class Effect {
       impact: effect.impact,
       endsAt: effect.endsAt,
       duration: effect.duration,
-      targets: effect.targets,
       criteria: effect.criteria,
       falloffType: effect.falloffType,
       tags: effect.tags,
-      maxStacks: effect.maxStacks
+      maxStacks: effect.maxStacks,
+      rangeMin: effect.rangeMin,
+      rangeMax: effect.rangeMax
     })
   }
 
@@ -92,9 +97,10 @@ export class Effect {
 
     this.duration = config.duration ?? modifier.duration ?? this.duration
     this.endsAt = config.endsAt ?? (this.startsAt + this.duration)
-    this.targets = config.targets ?? modifier.targets ?? this.targets
     this.falloffType = config.falloffType ?? modifier.falloffType ?? this.falloffType
     this.maxStacks = config.maxStacks ?? modifier.maxStacks ?? this.maxStacks
+    this.rangeMin = config.rangeMin ?? modifier.rangeMin ?? this.rangeMin
+    this.rangeMax = config.rangeMax ?? modifier.rangeMax ?? this.rangeMax
 
     this.impact = {
       ...config.impact,
@@ -120,11 +126,12 @@ export class Effect {
 
     let endsAt = this.startsAt + modifier.duration
     let duration = modifier.duration
-    let targets = [ ...modifier.targets]
     let criteria = [...modifier.criteria]
     let falloffType = modifier.falloffType
     let tags = [...modifier.tags]
     let maxStacks = modifier.maxStacks
+    let rangeMin = modifier.rangeMin
+    let rangeMax = modifier.rangeMax
   
 
     for (const replaceKey of replaceKeys) {
@@ -132,9 +139,6 @@ export class Effect {
         case 'duration':
           duration = replace.duration ?? duration
           endsAt = this.startsAt + duration
-          break
-        case 'targets':
-          targets = [...(replace.targets ?? targets)]
           break
         case 'criteria':
           criteria = [...(replace.criteria ?? criteria)]
@@ -148,6 +152,12 @@ export class Effect {
         case 'maxStacks':
           maxStacks = replace.maxStacks ?? maxStacks
           break
+        case 'rangeMin':
+          rangeMin = replace.rangeMin ?? rangeMin
+          break
+        case 'rangeMax':
+          rangeMax = replace.rangeMax ?? rangeMax
+          break
         default:
           impact[replaceKey] = replace[replaceKey] as number
           break
@@ -160,19 +170,22 @@ export class Effect {
           duration += add.duration ?? 0
           endsAt = this.startsAt + duration
           break
-        case 'targets':
-          targets = mergeUniqueArrays(add.targets ?? [], targets)
-          break
         case 'criteria':
-          criteria = mergeUniqueArrays(add.criteria ?? [], targets)
+          criteria = mergeUniqueArrays(add.criteria ?? [], this.criteria)
           break
         case 'falloffType':
           break
         case 'tags':
-          tags = mergeUniqueArrays(add.tags ?? [], targets)
+          tags = mergeUniqueArrays(add.tags ?? [], this.tags)
           break
         case 'maxStacks':
           maxStacks += add.maxStacks ?? 0
+          break
+        case 'rangeMin':
+          rangeMin += add.rangeMin ?? 0
+          break
+        case 'rangeMax':
+          rangeMax += add.rangeMax ?? 0
           break
         default:
           if (impact[addKey] === undefined) {
@@ -187,15 +200,6 @@ export class Effect {
     for (const removeKey of removeKeys) {
       switch (removeKey) {
         case 'duration':
-          break
-        case 'targets':
-          for (const target of remove.targets || []) {
-            const index = targets.indexOf(target)
-
-            if (index > -1) {
-              targets = targets.splice(index, 1)
-            }
-          }
           break
         case 'criteria':
           for (const query of remove.criteria || []) {
@@ -219,6 +223,8 @@ export class Effect {
           }  
           break
         case 'maxStacks':
+        case 'rangeMin':
+        case 'rangeMax':
           break
         default:
           delete impact[removeKey]
@@ -228,12 +234,13 @@ export class Effect {
   
     this.endsAt = endsAt
     this.impact = impact
-    this.targets = targets
     this.duration = duration
     this.criteria = criteria
     this.falloffType = falloffType
     this.tags = tags
     this.maxStacks = maxStacks
+    this.rangeMin = rangeMin
+    this.rangeMax = rangeMax
   }
 
   /**
@@ -247,11 +254,12 @@ export class Effect {
       impact: this.impact,
       endsAt: this.endsAt,
       duration: this.duration,
-      targets: this.targets,
       criteria: this.criteria,
       falloffType: this.falloffType,
       tags: this.tags,
-      maxStacks: this.maxStacks
+      maxStacks: this.maxStacks,
+      rangeMin: this.rangeMin,
+      rangeMax: this.rangeMax
     }
   }
 

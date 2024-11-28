@@ -30,11 +30,12 @@ test('Entities.Entity: Basic Test', () => {
     endsAt: 20,
     impact: { health: 1 },
     duration: 20,
-    targets: [ 'Sentient' ],
     criteria: [ '*' ],
     falloffType: 1,
     tags: [],
-    maxStacks: 1
+    maxStacks: 1,
+    rangeMin: 0,
+    rangeMax: 10
   })
   expect(entity.effects.length).toBe(1)
   expect(entity.effects[0]).toBe(effect)

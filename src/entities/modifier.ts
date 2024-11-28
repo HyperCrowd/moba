@@ -2,7 +2,7 @@ import type { Struct, PublicMembers } from '../types'
 import type { ModifierImpact } from './types'
 import type { Entity } from './index'
 import { FalloffType } from './constants'
-import { isChildOfType, getEntityType, query } from './hierarchy/query'
+import { isChildOfType, query } from './hierarchy/query'
 
 export type ModifierJSON = Partial<PublicMembers<Modifier>>
 
@@ -12,9 +12,10 @@ export class Modifier {
   description: string
   duration: number
   type: number
-  targets: string[]
   criteria: string[]
   falloffType: FalloffType
+  rangeMin: number
+  rangeMax: number
   impact: ModifierImpact
   tags: string[]
   maxStacks: number
@@ -36,11 +37,13 @@ export class Modifier {
     this.type = options.type ?? 1 // HierarchyNode
     this.duration = options.duration ?? -1 // Infinite
     this.impact = options.impact ?? {}
-    this.targets = options.targets ?? []
     this.criteria = options.criteria ?? ['*']
     this.falloffType = options.falloffType ?? 0 // None
     this.tags = options.tags ?? []
     this.maxStacks = options.maxStacks ?? 1
+    this.rangeMin = options.rangeMin ?? 0
+    this.rangeMax = options.rangeMax ?? 10
+  
 
     Object.freeze(this)
   }
@@ -56,11 +59,12 @@ export class Modifier {
       duration: this.duration,
       type: this.type,
       impact: this.impact,
-      targets: this.targets,
       criteria: this.criteria,
       falloffType: this.falloffType,
       tags: this.tags,
-      maxStacks: this.maxStacks
+      maxStacks: this.maxStacks,
+      rangeMax: this.rangeMax,
+      rangeMin: this.rangeMin
     }
   }
 
@@ -115,21 +119,6 @@ export class Modifier {
   /**
    *
    */
-  canTarget (entity: Entity | Modifier): boolean {
-    for (const target of this.targets) {
-      for (const type of getEntityType(target)) {
-        if (entity.type === type.id) {
-          return true
-        }
-      }
-    }
-
-    return false
-  }
-
-  /**
-   *
-   */
   isChildOfType (type: number) {
     return isChildOfType(this.type, type)
   }
@@ -137,7 +126,14 @@ export class Modifier {
   /**
    *
    */
-  getTargets (candidates: Entity[] | Modifier[]) {
+  getTargets (candidates: Entity[]) {
     return query(candidates, [this])
+  }
+
+  /**
+   *
+   */
+  canTarget (entity: Entity): boolean {
+    return this.getTargets([entity]).length > 0
   }
 }

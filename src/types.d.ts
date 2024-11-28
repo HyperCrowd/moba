@@ -18,6 +18,9 @@ export type Struct = {
 
 export type Any = Primitive | Struct
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Func = (...args: any[]) => any
+
 export type PublicMembers<T> = Partial<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K];

@@ -42,7 +42,7 @@ test('Entities.Effect: Basic Test', () => {
       falloffType: 0
     },
     replace: {
-      targets: ['Player']
+      coldDamage: 4
     }
   }
 
@@ -53,6 +53,7 @@ test('Entities.Effect: Basic Test', () => {
   expect(hydrated.endsAt).toBe(100)
   expect(hydrated.impact).toStrictEqual({
     fireDamage: 3,
+    coldDamage: 4,
     health: 1
   })
   

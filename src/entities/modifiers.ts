@@ -20,7 +20,6 @@ export const defineModifiers = () => {
       name: 'Example',
       description: 'Makes the target slightly ill',
       duration: 20,
-      targets: ['Sentient'],
       criteria: ['*'],
       falloffType: FalloffType.Linear,
       tags: [],

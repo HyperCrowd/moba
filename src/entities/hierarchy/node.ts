@@ -89,11 +89,13 @@ export class HierarchyNode {
     const results: HierarchyNode[] = []
 
     const parts = parentParts || targets.split('.')
+
     const i = partsIndex || 0
     const len = parts.length - 1
     const part = parts[i].toLowerCase()
 
     if (part === this.idStr || part === this.lowerName) {
+      
       // The hierarchy entity matches the targeting type
       if (i === len) {
         // At the end of the target chain, add the entity

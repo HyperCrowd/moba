@@ -6,6 +6,8 @@ export type ModifierAdjustment = {
   duration?: number
   falloffType?: number
   maxStacks?: number
+  rangeMin?: number
+  rangeMax?: number
   targets?: string[]
   criteria?: string[]
   tags?: string[]

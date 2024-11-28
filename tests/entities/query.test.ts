@@ -1,9 +1,10 @@
 import { Entity } from './../../src/entities/index'
-import { getEntityType, isChildOfType, getCriteriaFilters } from './../../src/entities/hierarchy/query'
+import { getEntityType, isChildOfType, getCriteriaFilters, query } from './../../src/entities/hierarchy/query'
 import { Value } from '../../src/entities/value'
 import { expect, test } from 'vitest'
+import { Modifier } from '../../src/entities/modifier'
 
-test('Query: Basic Test', () => {
+test.only('Query: Basic Test', () => {
   const alice = new Entity({
     id: 1,
     name: 'Alice',
@@ -59,21 +60,50 @@ test('Query: Basic Test', () => {
 
   // Criteria Filters
   const tagFilter = getCriteriaFilters(['tags = "leftHanded"'])
-  expect(tagFilter[0](alice)).toBe(true)
-  expect(tagFilter[0](bob)).toBe(true)
-  expect(tagFilter[0](carol)).toBe(false)
+  expect(tagFilter[0](alice, {})).toBe(true)
+  expect(tagFilter[0](bob, {})).toBe(true)
+  expect(tagFilter[0](carol, {})).toBe(false)
 
   const healthFilter = getCriteriaFilters(['health = 6'])
-  expect(healthFilter[0](alice)).toBe(false)
-  expect(healthFilter[0](bob)).toBe(true)
+  expect(healthFilter[0](alice, {})).toBe(false)
+  expect(healthFilter[0](bob, {})).toBe(true)
 
   const healthPercentFilter = getCriteriaFilters(['health = 50%'])
-  expect(healthPercentFilter[0](alice)).toBe(false)
-  expect(healthPercentFilter[0](bob)).toBe(true)
+  expect(healthPercentFilter[0](alice, {})).toBe(false)
+  expect(healthPercentFilter[0](bob, {})).toBe(true)
   
+  const typeOfFilter = getCriteriaFilters(['type of 1'])
+  expect(typeOfFilter[0](alice, { getEntityType })).toBe(true)
+  expect(typeOfFilter[0](bob, { getEntityType })).toBe(true)
+
+  const typeFilter = getCriteriaFilters(['type is 1'])
+  expect(typeFilter[0](alice, { getEntityType })).toBe(true)
+  expect(typeFilter[0](bob, { getEntityType })).toBe(false)
 
   // Query
-  // TODO have to fininsh entity.getStats
-  // const candidates = [alice, bob, carol]
-  // query()
+  const candidates = [alice, bob, carol]
+
+  expect(query(candidates, [new Modifier({
+    criteria: ['tags = "leftHanded"']
+  })])).toStrictEqual([ alice, bob ])
+
+  expect(query(candidates, [new Modifier({
+    criteria: ['health = 6']
+  })])).toStrictEqual([ bob ])
+
+  expect(query(candidates, [new Modifier({
+    criteria: ['health = 50%']
+  })])).toStrictEqual([ bob ])
+
+  expect(query(candidates, [new Modifier({
+    criteria: ['type of 1']
+  })])).toStrictEqual([ alice, bob, carol ])
+
+  expect(query(candidates, [new Modifier({
+    criteria: ['type is 1']
+  })])).toStrictEqual([ alice, carol ])
+
+  expect(query(candidates, [new Modifier({
+    criteria: ['tags = "leftHanded" OR health = 6']
+  })])).toStrictEqual([ alice, bob ])
 })
