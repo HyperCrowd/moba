@@ -67,6 +67,5 @@ test.only('Entities.Modifier: Basic Test', () => {
   expect(modifier.canTarget(alice)).toBe(true)
   expect(modifier.canTarget(bob)).toBe(false)
 
-  // TODO figure out query
-  // modifier.getTargets()
+  expect(modifier.getTargets([ alice, bob ])).toStrictEqual([ alice ])
 })

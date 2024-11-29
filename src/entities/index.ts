@@ -140,8 +140,8 @@ export class Entity {
   /**
    *
    */
-  filterFocus (targets: string[], criteria: string) {
-    this.focus.find(targets, criteria)
+  filterFocus ( criteria: string[]) {
+    return this.focus.find(criteria)
   }
 
   /**

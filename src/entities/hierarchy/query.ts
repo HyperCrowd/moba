@@ -103,7 +103,7 @@ export const getCriteriaFilters = (conditions: string | string[]): CandidateChec
  * 
  * Modifiers are list of Modifiers to apply to Targets.
  */
-export const query = (candidates: Entity[], modifiers: Array<Effect | Modifier | number>) => {
+export const query = (candidates: Entity[], modifiers: Array<string | Effect | Modifier | number>) => {
   // Criterias are the collection of Criteria functions from all of the Modifiers.  Criteria is how 
   // we determine if a Candidate is a Target.  A Modifier can have multiple Criteria, which by default, 
   // will be treated as an implied OR operation between all criterias
@@ -117,12 +117,14 @@ export const query = (candidates: Entity[], modifiers: Array<Effect | Modifier |
   // Iterate through all of the modifiers
   for (const modifier of modifiers) {
     // Convert the modifier to a unified format for ease of handling
-    const alteration = typeof modifier === 'number'
-      ? getModifierById(modifier)
-      : modifier
+    const criteria: string | string[] = typeof modifier === 'number'
+      ? getModifierById(modifier).criteria
+      : typeof modifier === 'string'
+        ? modifier
+        : modifier.criteria
 
     // Go through each Modifier's Criteria and extract its Criteria.
-    getCriteriaFilters(alteration.criteria).forEach(criteria => criterias.push(criteria))
+    getCriteriaFilters(criteria).forEach(criteria => criterias.push(criteria))
 
     // Go through each Target within the Modifier's target
     // for (const target of alteration.targets) {

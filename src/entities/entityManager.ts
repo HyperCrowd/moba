@@ -33,12 +33,7 @@ export class EntityManager extends UniqueArray<Entity> {
   /**
    *
    */
-  find (targets: string | string[], criteria: string) {
-    return query(this.list, [{
-      targets: targets instanceof Array
-        ? targets
-        : [targets],
-      criteria
-    }])
+  find (criteria: string[]) {
+    return query(this.list, criteria)
   }
 }

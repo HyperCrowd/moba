@@ -127,7 +127,7 @@ export class Modifier {
    *
    */
   getTargets (candidates: Entity[]) {
-    return query(candidates, [this])
+    return query(candidates, this.criteria)
   }
 
   /**

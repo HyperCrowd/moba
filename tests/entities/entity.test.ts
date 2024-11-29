@@ -50,6 +50,13 @@ test('Entities.Entity: Basic Test', () => {
   expect(entity.isChildOfType(-1)).toBe(true)
   expect(entity.isChildOfType(1)).toBe(false)
 
+  const alice = new Entity({
+    id: 1,
+    name: 'Alice',
+    type: 1,
+    tags: ['']
+  })
+
   const bob = new Entity({
     id: 2,
     name: 'Bob',
@@ -64,6 +71,8 @@ test('Entities.Entity: Basic Test', () => {
   entity.removeFocus(bob)
   expect(entity.isFocusedOn(bob)).toBe(false)
 
-  // TODO query tests
-  // entity.filterFocus()
+  entity.addFocus(alice)
+  entity.addFocus(bob)
+
+  expect(entity.filterFocus([ 'tags = "notAlice"' ])).toStrictEqual([ bob])
 })
